@@ -4,7 +4,7 @@
         Guid Id,
         Guid UserId,
         bool IsPublic,
-        StampPaletteSubscription[] Subscribers,
+        StampPaletteSubscriber[] Subscribers,
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt
         );
