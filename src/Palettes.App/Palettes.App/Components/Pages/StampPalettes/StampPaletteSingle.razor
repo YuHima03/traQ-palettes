@@ -3,6 +3,7 @@
 @inject Services.AuthenticatedTraqHttpClientFactory TraqHttpClientFactory
 @inject IOptions<Configurations.TraqClientOptions> TraqClientOptions
 @inject IMemoryCache Cache
+@inherits AuthenticatedPageBase
 
 @if (StampPalette is not null && StampPaletteCreator is not null)
 {
@@ -11,11 +12,14 @@
 
     <h3>スタンプ (@(StampPalette.Stamps.Count)個)</h3>
     <span>
-        @foreach (var s in StampPalette.Stamps)
-        {
-            <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
-                          StampId="@s"
-                          StampApi="@TraqStampApi" />
+        @{
+            Traq.Api.StampApi stampApi = new(CreateTraqAuthenticatedHttpClient()!);
+            @foreach (var s in StampPalette.Stamps)
+            {
+                <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
+                              StampId="@s"
+                              StampApi="@stampApi" />
+            }
         }
     </span>
 }
@@ -27,15 +31,22 @@
     Traq.Model.StampPalette? StampPalette { get; set; }
     Traq.Model.UserDetail? StampPaletteCreator { get; set; }
 
-    Traq.Api.StampApi? TraqStampApi { get; set; }
+    Domain.Models.StampPaletteRef? StampPaletteRef { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var userClient = await TraqHttpClientFactory.CreateClientAsync(AuthStateProvider);
-        TraqStampApi = new(userClient);
-        Traq.Api.UserApi userApi = new(userClient);
+        var userClient = await CreateTraqAuthenticatedHttpClientAsync();
+        if (userClient is null)
+        {
+            return;
+        }
 
-        StampPalette = await TraqStampApi.GetStampPaletteAsync(Id);
+        Traq.Api.StampApi stampApi = new(userClient);
+        Traq.Api.UserApi userApi = new(userClient);
+        StampPalette = await stampApi.GetStampPaletteAsync(Id);
         StampPaletteCreator = await userApi.GetCachedUserDetailAsync(Cache, StampPalette.CreatorId, CancellationToken.None);
+
+        await using var repo = await RepositoryFactory.CreateRepositoryAsync(default);
+        StampPaletteRef = await repo.TryGetStampPaletteAsync(Id, default);
     }
 }
