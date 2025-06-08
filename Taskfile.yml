@@ -2,6 +2,9 @@ version: 3
 
 tasks:
   tailwind-gen:
-    dir: ./src/Palettes.App
+    dir: ./
     cmds:
-      - npx @tailwindcss/cli -i "./Palettes.App/Styles/app.css" -o "./Palettes.App/wwwroot/css/app.css"
+      - |
+        npx @tailwindcss/cli \
+          -i "./src/Palettes.App/Palettes.App/Styles/app.css" \
+          -o "./src/Palettes.App/Palettes.App/wwwroot/css/app.css"
