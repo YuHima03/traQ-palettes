@@ -1,0 +1,45 @@
+services:
+  
+  app:
+    build:
+      context: ./
+      dockerfile: ./src/Palettes.App/Palettes.App/Dockerfile
+    ports:
+      - 80:8080
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 128m
+
+  db:
+    image: mariadb:latest
+    restart: always
+    ports:
+      - $NS_MARIADB_PORT:3306
+    environment:
+      MARIADB_PORT: 3306
+      MARIADB_USER: $NS_MARIADB_USER
+      MARIADB_PASSWORD: $NS_MARIADB_PASSWORD
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: $NS_MARIADB_DATABASE
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "-h", "$NS_MARIADB_HOSTNAME", "-P", "$NS_MARIADB_PORT", "-u", "$NS_MARIADB_USER", "-p$NS_MARIADB_PASSWORD", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 1s
+    mem_limit: 1g
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - 18080:8080
+    mem_limit: 64m
