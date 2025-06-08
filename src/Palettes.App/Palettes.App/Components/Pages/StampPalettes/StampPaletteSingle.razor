@@ -1,0 +1,41 @@
+﻿@page "/stamp-palettes/{Id:guid}"
+@inject AuthenticationStateProvider AuthStateProvider
+@inject Services.AuthenticatedTraqHttpClientFactory TraqHttpClientFactory
+@inject IOptions<Configurations.TraqClientOptions> TraqClientOptions
+@inject IMemoryCache Cache
+
+@if (StampPalette is not null && StampPaletteCreator is not null)
+{
+    <h2>@StampPalette.Name</h2>
+    <p>by @StampPaletteCreator.Name</p>
+
+    <h3>スタンプ (@(StampPalette.Stamps.Count)個)</h3>
+    <span>
+        @foreach (var s in StampPalette.Stamps)
+        {
+            <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
+                          StampId="@s"
+                          StampApi="@TraqStampApi" />
+        }
+    </span>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    Traq.Model.StampPalette? StampPalette { get; set; }
+    Traq.Model.UserDetail? StampPaletteCreator { get; set; }
+
+    Traq.Api.StampApi? TraqStampApi { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userClient = await TraqHttpClientFactory.CreateClientAsync(AuthStateProvider);
+        TraqStampApi = new(userClient);
+        Traq.Api.UserApi userApi = new(userClient);
+
+        StampPalette = await TraqStampApi.GetStampPaletteAsync(Id);
+        StampPaletteCreator = await userApi.GetCachedUserDetailAsync(Cache, StampPalette.CreatorId, CancellationToken.None);
+    }
+}

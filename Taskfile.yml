@@ -1,0 +1,7 @@
+version: 3
+
+tasks:
+  tailwind-gen:
+    dir: ./src/Palettes.App
+    cmds:
+      - npx @tailwindcss/cli -i "./Palettes.App/Styles/app.css" -o "./Palettes.App/wwwroot/css/app.css"

@@ -1,0 +1,48 @@
+﻿@inject IMemoryCache Cache
+
+<i class="w-6 h-6 inline-block overflow-hidden bg-center bg-no-repeat bg-contain align-middle" style="background-image: url(@StampImageUrl);"></i>
+
+@code {
+    [Parameter]
+    public Guid StampId { get; set; }
+
+    [Parameter]
+    public string? StampName { get; set; }
+
+    [Parameter]
+    public Traq.Api.IStampApiAsync? StampApi { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    [NotNull]
+    public string? TraqApiBaseUrl { get; set; }
+
+    string? StampImageUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        StampImageUrl = await GetStampImageUrlAsync();
+    }
+
+    async ValueTask<string> GetStampImageUrlAsync()
+    {
+        var stampId = StampId;
+        if (stampId == Guid.Empty)
+        {
+            if (StampApi is null)
+            {
+                throw new InvalidOperationException("StampApi must be provided when StampFileId is not set.");
+            }
+            if (StampName is null)
+            {
+                throw new InvalidOperationException("StampName must be provided when StampId is not set.");
+            }
+            var stamp = await StampApi.GetCachedStampAsync(Cache, StampName);
+        }
+        var apiBaseUrl = TraqApiBaseUrl.AsSpan().TrimEnd('/');
+        return apiBaseUrl.EndsWith("v3")
+            ? $"{apiBaseUrl[..^2]}1.0/public/emoji/{stampId}"
+            : $"{apiBaseUrl}/public/emoji/{stampId}";
+    }
+}

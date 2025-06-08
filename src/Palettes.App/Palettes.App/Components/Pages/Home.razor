@@ -1,0 +1,46 @@
+﻿@page "/"
+@inject AuthenticationStateProvider AuthStateProvider
+@inject Services.AuthenticatedTraqHttpClientFactory TraqHttpClientFactory
+@inject IOptions<Configurations.TraqClientOptions> TraqClientOptions
+@inject NavigationManager Navigation
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<AuthorizeView>
+    @if (UserStampPalettes is not null)
+    {
+        <h2>あなたのスタンプパレット</h2>
+        foreach (var sp in UserStampPalettes)
+        {
+            <div class="inline-block border-1 border-solid border-gray-7">
+                <h3 class="hover:cursor-pointer hover:underline">
+                    <a href="@($"./stamp-palettes/{sp.Id}")">@sp.Name</a>
+                </h3>
+                <span>
+                    @foreach (var s in sp.Stamps.Take(20))
+                    {
+                        <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
+                                      StampId="@s"
+                                      StampApi="@TraqHttpClientFactory.CreateClientAsync(AuthStateProvider).AsTask().ContinueWith(t => new Traq.Api.StampApi(t.Result)).GetAwaiter().GetResult()" />
+                    }
+                </span>
+            </div>
+        }
+    }
+</AuthorizeView>
+
+@code {
+    List<Traq.Model.StampPalette>? UserStampPalettes { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userClient = await TraqHttpClientFactory.CreateClientAsync(AuthStateProvider);
+
+        Traq.Api.StampApi stampsApiClient = new(userClient);
+        UserStampPalettes = await stampsApiClient.GetStampPalettesAsync();
+    }
+}
