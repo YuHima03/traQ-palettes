@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Palettes.App.Configurations;
+using Palettes.Infrastructure.Repository;
 
 namespace Palettes.App
 {
@@ -33,10 +36,20 @@ namespace Palettes.App
                 .AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>()
                 .AddCascadingAuthenticationState();
 
+            // Http Clients
             builder.Services.AddHttpClient();
             builder.Services.AddDefaultTraqHttpClient();
             builder.Services.AddAuthenticatedTraqHttpClient();
 
+            // Database
+            builder.Services.Configure<DbConnectionOptions>(builder.Configuration);
+            builder.Services.AddRepositoryFactory((sp, options) =>
+            {
+                var dbConnectionString = sp.GetRequiredService<IOptions<DbConnectionOptions>>().Value.GetConnectionString();
+                options.UseMySQL(dbConnectionString);
+            });
+
+            // Caching
             builder.Services.AddMemoryCache(builder.Configuration.GetSection("Cache:Memory").Bind);
 
             builder.Services.AddControllers();
