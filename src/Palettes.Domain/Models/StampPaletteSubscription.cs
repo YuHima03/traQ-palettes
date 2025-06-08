@@ -3,7 +3,7 @@
     public sealed record class StampPaletteSubscription(
         Guid Id,
         Guid UserId,
-        Guid StampPaletteId,
+        StampPalette StampPalette,
         Guid CopiedStampPaletteId,
         DateTimeOffset SyncedAt,
         DateTimeOffset CreatedAt,
