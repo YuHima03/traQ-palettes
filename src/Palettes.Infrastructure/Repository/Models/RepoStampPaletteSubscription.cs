@@ -3,7 +3,7 @@
 namespace Palettes.Infrastructure.Repository.Models
 {
     [Table("stamp_palette_subscriptions")]
-    sealed class StampPaletteSubscription
+    sealed class RepoStampPaletteSubscription
     {
         [Column("id")]
         public Guid Id { get; set; }
