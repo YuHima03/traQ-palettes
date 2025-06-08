@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Buffers.Text;
 using System.Security.Claims;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Palettes.App.Controllers.Authentication
 {
@@ -16,15 +16,20 @@ namespace Palettes.App.Controllers.Authentication
         ILogger<TraqAuthenticationController> logger,
         IOptions<Configurations.TraqClientOptions> traqClientOptions) : ControllerBase
     {
-        const string Session_TraqCodeVerifier = "traq_code_verifier";
+        const string Session_TraqCodeVerifier = "auth.traq.code_verifier";
+        const string Session_RedirectUri = "auth.redirect";
 
         [HttpGet]
         [Route("")]
-        public IActionResult Index()
+        public IActionResult Index([FromQuery(Name = "redirect")] string? redirect = null)
         {
+            if (!Url.IsLocalUrl(redirect))
+            {
+                redirect = null;
+            }
             if (HttpContext.User.Identity is { IsAuthenticated: true })
             {
-                return LocalRedirect("/");
+                return LocalRedirect(redirect ?? "/");
             }
 
             var traqOptions = traqClientOptions.Value;
@@ -44,6 +49,7 @@ namespace Palettes.App.Controllers.Authentication
                 return StatusCode(StatusCodes.Status503ServiceUnavailable);
             }
             sess.Set(Session_TraqCodeVerifier, verifier);
+            sess.SetString(Session_RedirectUri, redirect ?? "/");
 
             var query = QueryString.Create([
                 KeyValuePair.Create("client_id", traqOptions.ClientId)!,
@@ -81,9 +87,11 @@ namespace Palettes.App.Controllers.Authentication
             {
                 return StatusCode(StatusCodes.Status401Unauthorized);
             }
+            var redirect = sess.GetString(Session_RedirectUri);
             sess.Remove(Session_TraqCodeVerifier);
+            sess.Remove(Session_RedirectUri);
 
-            Traq.Api.IOauth2ApiAsync traqOAuth2Api = new Traq.Api.Oauth2Api(httpClientFactory.CreateClient("traq"));
+            Traq.Api.Oauth2Api traqOAuth2Api = new(httpClientFactory.CreateClient("traq"));
             var tokenRes = await traqOAuth2Api.PostOAuth2TokenAsync(
                 grantType: "authorization_code",
                 clientId: traqOptions.ClientId,
@@ -138,7 +146,12 @@ namespace Palettes.App.Controllers.Authentication
                     ExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(Math.Min(tokenRes.ExpiresIn, TimeSpan.SecondsPerDay * 7)), // 有効期限は最長で7日
                 }
             );
-            return LocalRedirect("/");
+
+            if (!Url.IsLocalUrl(redirect))
+            {
+                redirect = null;
+            }
+            return LocalRedirect(redirect ?? "/");
         }
 
         readonly static byte[] CodeVerifierChars = [.. "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~"u8];

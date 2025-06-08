@@ -8,6 +8,8 @@ namespace Palettes.App.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+            builder.Services.AddAuthorizationCore();
+
             builder.Services.AddMemoryCache(builder.Configuration.GetSection("Cache:Memory").Bind);
 
             await builder.Build().RunAsync();

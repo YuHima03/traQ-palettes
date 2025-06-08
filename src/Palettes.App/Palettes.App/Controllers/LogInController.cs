@@ -6,9 +6,13 @@ namespace Palettes.App.Controllers
     [ApiController]
     public class LogInController : ControllerBase
     {
-        public LocalRedirectResult Index()
+        public LocalRedirectResult Index([FromQuery(Name = "redirect")] string? redirect = null)
         {
-            return LocalRedirect("/auth/traq");
+            if (!Url.IsLocalUrl(redirect))
+            {
+                redirect = null;
+            }
+            return LocalRedirect($"/auth/traq?redirect={Uri.EscapeDataString(redirect ?? "/")}");
         }
     }
 }

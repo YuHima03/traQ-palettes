@@ -6,36 +6,28 @@
 
 <PageTitle>Home</PageTitle>
 
-<AuthorizeView>
-    <NotAuthorized>
-        <p>Palettesの利用にはtraQでの認証が必要です。</p>
-        <a href="./login">traQで認証</a>
-    </NotAuthorized>
-    <Authorized>
-        <h1>Palettes</h1>
+<h1>Palettes</h1>
 
-        @if (UserStampPalettes is not null)
-        {
-            <h2>あなたのスタンプパレット</h2>
-            foreach (var sp in UserStampPalettes.Value)
-            {
-                <div class="inline-block border-1 border-solid border-gray-7">
-                    <h3 class="hover:cursor-pointer hover:underline">
-                        <a href="@($"./stamp-palettes/{sp.Id}")">@sp.Name</a>
-                    </h3>
-                    <span>
-                        @foreach (var s in sp.Stamps.Take(20))
-                        {
-                            <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
-                            StampId="@s"
-                            StampApi="@TraqStampApi" />
-                        }
-                    </span>
-                </div>
-            }
-        }
-    </Authorized>
-</AuthorizeView>
+@if (UserStampPalettes is not null)
+{
+    <h2>あなたのスタンプパレット</h2>
+    foreach (var sp in UserStampPalettes.Value)
+    {
+        <div class="inline-block border-1 border-solid border-gray-7">
+            <h3 class="hover:cursor-pointer hover:underline">
+                <a href="@($"./stamp-palettes/{sp.Id}")">@sp.Name</a>
+            </h3>
+            <span>
+                @foreach (var s in sp.Stamps.Take(20))
+                {
+                    <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
+                                  StampId="@s"
+                                  StampApi="@TraqStampApi" />
+                }
+            </span>
+        </div>
+    }
+}
 
 @code {
     Traq.Api.StampApi? TraqStampApi { get; set; }
