@@ -12,6 +12,8 @@ namespace Palettes.Domain.Repository
 
         public ValueTask<StampPaletteSubscription> PostStampPaletteSubscriptionAsync(PostStampPaletteSubscriptionRequest request, CancellationToken ct);
 
+        public ValueTask<StampPaletteSubscription?> TryGetStampPaletteSubscriptionAsync(Guid userId, Guid paletteId, CancellationToken ct);
+
         public ValueTask<StampPaletteSubscription> UpdateStampPaletteSubscriptionAsync(Guid id, UpdateStampPaletteSubscriptionRequest request, CancellationToken ct);
     }
 }
