@@ -4,49 +4,111 @@
 @inject IOptions<Configurations.TraqClientOptions> TraqClientOptions
 @inject IMemoryCache Cache
 @inherits AuthenticatedPageBase
+@rendermode InteractiveServer
 
-@if (StampPalette is not null && StampPaletteCreator is not null)
+@if (TraqStampPalette is not null && StampPaletteCreator is not null)
 {
-    <h2>@StampPalette.Name</h2>
+    <h2>@TraqStampPalette.Name</h2>
     <p>by @StampPaletteCreator.Name</p>
 
-    <h3>スタンプ (@(StampPalette.Stamps.Count)個)</h3>
+    <h3>スタンプ (@(TraqStampPalette.Stamps.Count)個)</h3>
     <span>
         @{
             Traq.Api.StampApi stampApi = new(CreateTraqAuthenticatedHttpClient()!);
-            @foreach (var s in StampPalette.Stamps)
+            @foreach (var s in TraqStampPalette.Stamps)
             {
                 <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
-                              StampId="@s"
-                              StampApi="@stampApi" />
+                StampId="@s"
+                StampApi="@stampApi" />
             }
         }
     </span>
+
+
+    <h3>スタンプの公開</h3>
+    @if (StampPalette is not { IsPublic: true })
+    {
+        <p>スタンプは非公開です。</p>
+        <button @onclick="() => ChangeVisibility(true)">公開する</button>
+    }
+    else
+    {
+        <p>スタンプが公開されています</p>
+        <button @onclick="() => ChangeVisibility(false)">非公開にする</button>
+    }
+
+    <h3>スタンプの購読者</h3>
+    @if (StampPalette is { IsPublic: true })
+    {
+        <p>@StampPalette.Subscribers.Length 人</p>
+    }
 }
 
 @code {
     [Parameter]
     public Guid Id { get; set; }
 
-    Traq.Model.StampPalette? StampPalette { get; set; }
+    Traq.Model.StampPalette? TraqStampPalette { get; set; }
     Traq.Model.UserDetail? StampPaletteCreator { get; set; }
 
-    Domain.Models.StampPalette? StampPaletteRef { get; set; }
+    Domain.Models.StampPalette? StampPalette { get; set; }
+
+    bool ButtonIsEnabled = true;
 
     protected override async Task OnInitializedAsync()
     {
         var userClient = await CreateTraqAuthenticatedHttpClientAsync();
         if (userClient is null)
         {
-            return;
+            throw new Exception("Failed to create authenticated HTTP client.");
         }
 
         Traq.Api.StampApi stampApi = new(userClient);
         Traq.Api.UserApi userApi = new(userClient);
-        StampPalette = await stampApi.GetStampPaletteAsync(Id);
-        StampPaletteCreator = await userApi.GetCachedUserDetailAsync(Cache, StampPalette.CreatorId, CancellationToken.None);
+        TraqStampPalette = await stampApi.GetStampPaletteAsync(Id);
+        StampPaletteCreator = await userApi.GetCachedUserDetailAsync(Cache, TraqStampPalette.CreatorId, CancellationToken.None);
 
         await using var repo = await RepositoryFactory.CreateRepositoryAsync(default);
-        StampPaletteRef = await repo.TryGetStampPaletteAsync(Id, default);
+        StampPalette = await repo.TryGetStampPaletteAsync(Id, default);
+
+        var loginUserIdClaim = (await AuthStateProvider.GetAuthenticationStateAsync()).User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (loginUserIdClaim is null || !Guid.TryParse(loginUserIdClaim.Value, out var loginUserId))
+        {
+            throw new Exception("Failed to retrieve the logged-in user's ID.");
+        }
+
+        if (StampPalette is not { IsPublic: true })
+        {
+            if (TraqStampPalette.CreatorId != loginUserId)
+            {
+                throw new Exception("Permission denied.");
+            }
+        }
+    }
+
+    void ChangeVisibility(bool isPublic)
+    {
+        if (!Interlocked.Exchange(ref ButtonIsEnabled, false))
+        {
+            return;
+        }
+
+        Task.Run(async () =>
+        {
+            await using var repo = await RepositoryFactory.CreateRepositoryAsync(default).ConfigureAwait(false);
+            var palette = await repo.TryGetStampPaletteAsync(Id, default).ConfigureAwait(false);
+            if (palette is null)
+            {
+                palette = await repo.PostStampPaletteAsync(new Domain.Models.PostStampPaletteRequest(Id, StampPaletteCreator!.Id, isPublic), default).ConfigureAwait(false);
+            }
+            else
+            {
+                palette = await repo.UpdateStampPaletteAsync(Id, new Domain.Models.UpdateStampPaletteRequest(isPublic), default).ConfigureAwait(false);
+            }
+            StampPalette = palette;
+        })
+        .GetAwaiter().GetResult();
+
+        ButtonIsEnabled = true;
     }
 }
