@@ -42,7 +42,7 @@ namespace Palettes.Infrastructure.Repository
         {
             RepoStampPalette repoModel = new()
             {
-                Id = Guid.CreateVersion7(),
+                Id = request.Id,
                 UserId = request.UserId,
                 IsPublic = request.IsPublic
             };
