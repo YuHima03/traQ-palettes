@@ -113,6 +113,7 @@ namespace Palettes.Infrastructure.Repository
         public static StampPaletteSubscriber ToStampPaletteSubscriber(this RepoStampPaletteSubscription repositoryModel)
         {
             return new StampPaletteSubscriber(
+                repositoryModel.Id,
                 repositoryModel.UserId,
                 repositoryModel.CreatedAt
             );
