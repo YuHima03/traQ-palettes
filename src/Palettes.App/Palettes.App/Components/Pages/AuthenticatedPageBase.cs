@@ -44,7 +44,7 @@ namespace Palettes.App.Components.Pages
             }
             try
             {
-                return (authState.User.Identity as ClaimsIdentity)?.Claims.ToTraqUserInfo();
+                return authState.User.ToTraqUserInfo();
             }
             catch
             {
