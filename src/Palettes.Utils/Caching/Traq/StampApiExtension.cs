@@ -8,6 +8,8 @@ namespace Palettes.Utils.Caching.Traq
     {
         static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(5);
 
+        static readonly TimeSpan StampPaletteExpiration = TimeSpan.FromMinutes(1);
+
         public static async ValueTask<Stamp> GetCachedStampAsync(this IStampApiAsync api, IMemoryCache cache, Guid id, CancellationToken ct = default)
         {
             if (cache.TryGetValue<Guid, Stamp>(CacheSections.Stamp, id, out var stamp) && stamp is not null)
@@ -44,6 +46,17 @@ namespace Palettes.Utils.Caching.Traq
                 cache.Set(CacheSections.NamedStamp, s.Name, s.Id, DefaultExpiration);
             }
             return stamps;
+        }
+
+        public static async ValueTask<StampPalette> GetCachedStampPaletteAsync(this IStampApiAsync api, IMemoryCache cache, Guid id, CancellationToken ct = default)
+        {
+            if (cache.TryGetValue<Guid, StampPalette>(CacheSections.StampPalette, id, out var palette) && palette is not null)
+            {
+                return palette;
+            }
+            palette = await api.GetStampPaletteAsync(id, ct);
+            cache.Set(CacheSections.StampPalette, id, palette, StampPaletteExpiration);
+            return palette;
         }
     }
 }

@@ -6,6 +6,8 @@
         public const string AllStamps = "traq.stamp.all";
         public const string NamedStamp = "traq.stamp.named";
 
+        public const string StampPalette = "traq.stamp.palette";
+
         public const string User = "traq.user";
         public const string AllUsers = "traq.user.all";
         public const string UserNames = "traq.user.name";
