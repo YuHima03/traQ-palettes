@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Palettes.Utils.Authentication;
+using Palettes.Utils.Authentication.Claims;
 using System.Buffers.Text;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -129,10 +131,12 @@ namespace Palettes.App.Controllers.Authentication
 
             ClaimsIdentity identity = new(
                 claims: [
-                    new Claim(ClaimTypes.Name, me.Name),
-                    new Claim(ClaimTypes.NameIdentifier, me.Id.ToString()),
-                    new Claim(ClaimTypesInternal.TraqAccessToken, tokenRes.AccessToken),
-                    new Claim(ClaimTypes.Expiration, DateTimeOffset.UtcNow.AddSeconds(tokenRes.ExpiresIn).ToString())
+                    new Claim(ClaimTypes.Expiration, DateTimeOffset.UtcNow.AddSeconds(tokenRes.ExpiresIn).ToString()),
+                    .. new AuthenticatedUserInfo{
+                        Id = me.Id,
+                        Name = me.Name,
+                        AccessToken = tokenRes.AccessToken
+                    }.ToTraqUserClaims(),
                     ],
                 authenticationType: CookieAuthenticationDefaults.AuthenticationScheme
                 );

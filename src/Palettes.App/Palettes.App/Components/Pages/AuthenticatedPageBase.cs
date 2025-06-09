@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Palettes.App.Services;
+using Palettes.Utils.Authentication;
+using Palettes.Utils.Authentication.Claims;
+using System.Security.Claims;
 
 namespace Palettes.App.Components.Pages
 {
@@ -30,6 +33,23 @@ namespace Palettes.App.Components.Pages
                 return null;
             }
             return await TraqHttpClientFactory.CreateClientAsync(AuthStateProvider).ConfigureAwait(false);
+        }
+
+        protected async ValueTask<AuthenticatedUserInfo?> TryGetTraqUserInfoAsync()
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync().ConfigureAwait(false);
+            if (authState.User.Identity is not { IsAuthenticated: true })
+            {
+                return null;
+            }
+            try
+            {
+                return (authState.User.Identity as ClaimsIdentity)?.Claims.ToTraqUserInfo();
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

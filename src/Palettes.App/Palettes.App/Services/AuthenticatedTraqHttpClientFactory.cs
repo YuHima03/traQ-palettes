@@ -12,7 +12,7 @@ namespace Palettes.App.Services
             {
                 return client;
             }
-            var token = authState.User.FindFirst(Controllers.Authentication.ClaimTypesInternal.TraqAccessToken);
+            var token = authState.User.FindFirst(Utils.Authentication.Claims.ClaimTypesInternal.TraqAccessToken);
             if (token is not null)
             {
                 client.DefaultRequestHeaders.Authorization = new("Bearer", token.Value);
