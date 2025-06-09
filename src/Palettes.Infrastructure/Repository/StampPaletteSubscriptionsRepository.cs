@@ -1,17 +1,11 @@
 ﻿using Palettes.Domain.Models;
 using Palettes.Domain.Repository;
-using Palettes.Infrastructure.Repository.Models;
 
 namespace Palettes.Infrastructure.Repository
 {
     public sealed partial class Repository : IStampPaletteSubscriptionsRepository
     {
         public ValueTask DeleteStampPaletteSubscriptionAsync(Guid id, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<StampPaletteSubscription[]> GetStampPaletteSubscribersAsync(Guid stampPaletteId, CancellationToken ct)
         {
             throw new NotImplementedException();
         }

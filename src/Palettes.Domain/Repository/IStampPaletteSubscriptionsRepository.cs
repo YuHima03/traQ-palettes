@@ -8,8 +8,6 @@ namespace Palettes.Domain.Repository
 
         public ValueTask<StampPaletteSubscription> GetStampPaletteSubscriptionAsync(Guid id, CancellationToken ct);
 
-        public ValueTask<StampPaletteSubscription[]> GetStampPaletteSubscribersAsync(Guid stampPaletteId, CancellationToken ct);
-
         public ValueTask<StampPaletteSubscription[]> GetUserStampPaletteSubscriptionsAsync(Guid userId, CancellationToken ct);
 
         public ValueTask<StampPaletteSubscription> PostStampPaletteSubscriptionAsync(PostStampPaletteSubscriptionRequest request, CancellationToken ct);
