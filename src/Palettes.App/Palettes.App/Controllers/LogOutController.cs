@@ -9,13 +9,14 @@ namespace Palettes.App.Controllers
     public class LogOutController : ControllerBase
     {
         [HttpGet]
-        public async Task<LocalRedirectResult> IndexAsync()
+        public async Task<LocalRedirectResult> IndexAsync([FromQuery(Name = "redirect")] string? redirect = null)
         {
             if (HttpContext.User.Identity is { IsAuthenticated: true })
             {
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             }
-            return LocalRedirect("/");
+            redirect = $"/{redirect?.TrimStart('/')}";
+            return LocalRedirect(Url.IsLocalUrl(redirect) ? redirect : "/");
         }
     }
 }
