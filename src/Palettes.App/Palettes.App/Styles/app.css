@@ -120,13 +120,24 @@
 @theme {
     --font-sans: "Inter", "Noto Sans JP", ui-sans-serif, sans-serif;
     --font-mono: "SFMono", "Consolas", ui-monospace, monospace;
+    --text-small: 0.875rem; /* 14px */
+    --text-tiny: 0.75rem; /* 12px */
 }
 
 @layer components {
     .tx-body {
         @apply font-normal font-sans leading-5 text-base text-tx-default-primary;
     }
-}
-
-:root {
+    .tx-body-strong {
+        @apply font-bold font-sans leading-5 text-base text-tx-default-primary;
+    }
+    .tx-body2 {
+        @apply font-normal font-sans leading-5 text-small text-tx-default-primary;
+    }
+    .tx-body2-strong {
+        @apply font-bold font-sans leading-5 text-small text-tx-default-primary;
+    }
+    .tx-caption {
+        @apply font-medium font-sans leading-4 text-tiny text-tx-default-primary;
+    }
 }
