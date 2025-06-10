@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Palettes.App.Services;
 using Palettes.Utils.Authentication;
 using Palettes.Utils.Authentication.Claims;
-using System.Security.Claims;
 
 namespace Palettes.App.Components.Pages
 {
@@ -14,11 +13,27 @@ namespace Palettes.App.Components.Pages
         AuthenticationStateProvider AuthStateProvider { get; set; }
 
         [Inject]
+        NavigationManager Navigation { get; set; }
+
+        [Inject]
         AuthenticatedTraqHttpClientFactory TraqHttpClientFactory { get; set; }
 
         [Inject]
         protected Domain.Repository.IRepositoryFactory RepositoryFactory { get; set; }
 #pragma warning restore CS8618
+
+        protected override async Task OnInitializedAsync()
+        {
+            var client = await CreateTraqAuthenticatedHttpClientAsync().ConfigureAwait(false);
+            if (client is null || !await IsLoggedInAsync(new Traq.Api.MeApi(client)).ConfigureAwait(false))
+            {
+                // Not logged in or traQ session is expired.
+                var redirect = $"/{Navigation.ToBaseRelativePath(Navigation.Uri).TrimStart('/')}";
+                Navigation.NavigateTo($"logout?redirect={Uri.EscapeDataString(redirect)}", true);
+                return;
+            }
+            await base.OnInitializedAsync().ConfigureAwait(false);
+        }
 
         protected HttpClient? CreateTraqAuthenticatedHttpClient()
         {
@@ -50,6 +65,12 @@ namespace Palettes.App.Components.Pages
             {
                 return null;
             }
+        }
+
+        static async ValueTask<bool> IsLoggedInAsync(Traq.Api.MeApi meApi)
+        {
+            var response = await meApi.GetMeWithHttpInfoAsync().ConfigureAwait(false);
+            return response.StatusCode == System.Net.HttpStatusCode.OK;
         }
     }
 }

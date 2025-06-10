@@ -23,8 +23,8 @@
                 @foreach (var s in sp.Stamps.Take(20))
                 {
                     <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
-                    StampId="@s"
-                    StampApi="@TraqStampApi" />
+                                  StampId="@s"
+                                  StampApi="@TraqStampApi" />
                 }
             </span>
         </div>
@@ -61,6 +61,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
         var client = await CreateTraqAuthenticatedHttpClientAsync();
         if (client is null)
         {

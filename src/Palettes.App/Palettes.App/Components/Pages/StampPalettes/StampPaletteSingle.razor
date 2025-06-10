@@ -57,6 +57,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+
         var userClient = await CreateTraqAuthenticatedHttpClientAsync();
         if (userClient is null)
         {
