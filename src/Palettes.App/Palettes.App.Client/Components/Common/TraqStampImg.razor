@@ -1,6 +1,8 @@
 ﻿@inject IMemoryCache Cache
 
-<i class="w-6 h-6 inline-block overflow-hidden bg-center bg-no-repeat bg-contain align-middle" style="background-image: url(@StampImageUrl);"></i>
+<i class="inline-block overflow-hidden bg-center bg-no-repeat bg-contain align-middle"
+   style="width: @(Width)px; height: @(Height)px; background-image: url(@GetStampImageUri(TraqApiBaseUrl, Stamp?.Id ?? Guid.Empty));"
+   title="@Stamp?.Name"></i>
 
 @code {
     [Parameter]
@@ -10,39 +12,61 @@
     public string? StampName { get; set; }
 
     [Parameter]
-    public Traq.Api.IStampApiAsync? StampApi { get; set; }
+    [EditorRequired]
+    public required Traq.Api.IStampApiAsync StampApi { get; set; }
 
     [Parameter]
     [EditorRequired]
-    [NotNull]
-    public string? TraqApiBaseUrl { get; set; }
+    public required string TraqApiBaseUrl { get; set; }
 
-    string? StampImageUrl { get; set; }
+    [Parameter]
+    public int Width { get; set; } = 24;
+
+    [Parameter]
+    public int Height { get; set; } = 24;
+
+    Traq.Model.Stamp? Stamp;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        StampImageUrl = await GetStampImageUrlAsync();
+        try
+        {
+            Stamp = await GetStampAsync();
+        }
+        catch
+        {
+            Stamp = null;
+        }
     }
 
-    async ValueTask<string> GetStampImageUrlAsync()
+    ValueTask<Traq.Model.Stamp> GetStampAsync()
     {
-        var stampId = StampId;
-        if (stampId == Guid.Empty)
+        if (StampApi is null)
         {
-            if (StampApi is null)
-            {
-                throw new InvalidOperationException("StampApi must be provided when StampFileId is not set.");
-            }
+            throw new InvalidOperationException("StampApi must be provided when StampFileId is not set.");
+        }
+        if (StampId == Guid.Empty)
+        {
             if (StampName is null)
             {
                 throw new InvalidOperationException("StampName must be provided when StampId is not set.");
             }
-            var stamp = await StampApi.GetCachedStampAsync(Cache, StampName);
+            return StampApi.GetCachedStampAsync(Cache, StampName);
         }
-        var apiBaseUrl = TraqApiBaseUrl.AsSpan().TrimEnd('/');
+        else
+        {
+            return StampApi.GetCachedStampAsync(Cache, StampId);
+        }
+    }
+
+    static string GetStampImageUri(string traqApiBaseUri, Guid stampId)
+    {
+        var apiBaseUrl = traqApiBaseUri.AsSpan().TrimEnd('/');
         return apiBaseUrl.EndsWith("v3")
             ? $"{apiBaseUrl[..^2]}1.0/public/emoji/{stampId}"
             : $"{apiBaseUrl}/public/emoji/{stampId}";
     }
 }
+
+
