@@ -1,0 +1,20 @@
+﻿<img src="@($"{TraqApiBaseUri.TrimEnd('/')}/public/icon/{Username}")"
+     alt="@($"@{Username}")"
+     width="@Width"
+     height="@Height"/>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required string TraqApiBaseUri { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required string Username { get; set; }
+
+    [Parameter]
+    public int? Width { get; set; }
+
+    [Parameter]
+    public int? Height { get; set; }
+}
