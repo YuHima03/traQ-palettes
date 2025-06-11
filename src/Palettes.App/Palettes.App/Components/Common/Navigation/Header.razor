@@ -1,0 +1,29 @@
+﻿@inject AuthenticationStateProvider AuthStateProvider
+@inject IOptions<Configurations.TraqClientOptions> TraqOptions
+
+<header class="w-full h-[4rem] px-6 flex flex-row gap-x-6 items-center justify-between bg-bg-default-secondary">
+    <span class="inline tx-body-strong">
+        Q-Palettes
+    </span>
+    @if (LoggedInUsername is not null)
+    {
+        <span class="w-fit h-fit rounded-full overflow-hidden">
+            <img src="@($"{TraqOptions.Value.ApiBaseAddress?.TrimEnd('/')}/public/icon/{LoggedInUsername}")"
+                 width="40"
+                 height="40" />
+        </span>
+    }
+</header>
+
+@code {
+    string? LoggedInUsername = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity is { IsAuthenticated: true })
+        {
+            LoggedInUsername = authState.User.FindFirst(ClaimTypes.Name)?.Value;
+        }
+    }
+}
