@@ -3,20 +3,5 @@
 
 <div>
     <p>Q-Palettesを利用するには、traQでの認証が必要です。</p>
-    <a href="@LoginUrl?.ToString()">認証</a>
+    <a href="@($"/login?redirect={Uri.EscapeDataString($"/{Navigation.ToBaseRelativePath(Navigation.Uri).TrimStart('/')}")}")">認証</a>
 </div>
-
-@code {
-    Uri? LoginUrl;
-
-    protected override Task OnInitializedAsync()
-    {
-        var redirect = Navigation.ToBaseRelativePath(Navigation.Uri);
-        if (!redirect.StartsWith("/"))
-        {
-            redirect = $"/{redirect}";
-        }
-        LoginUrl = Navigation.ToAbsoluteUri($"login?redirect={Uri.UnescapeDataString(redirect)}");
-        return Task.CompletedTask;
-    }
-}
