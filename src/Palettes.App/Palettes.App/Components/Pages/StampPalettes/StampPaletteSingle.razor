@@ -4,44 +4,103 @@
 @inject IOptions<Configurations.TraqClientOptions> TraqClientOptions
 @inject IMemoryCache Cache
 @inherits AuthenticatedPageBase
-@rendermode InteractiveServer
 
 @if (TraqStampPalette is not null && StampPaletteCreator is not null)
 {
-    <h2>@TraqStampPalette.Name</h2>
-    <p>by @StampPaletteCreator.Name</p>
+    <div class="flex flex-col gap-y-6">
 
-    <h3>スタンプ (@(TraqStampPalette.Stamps.Count)個)</h3>
-    <span>
-        @{
-            Traq.Api.StampApi stampApi = new(CreateTraqAuthenticatedHttpClient()!);
-            @foreach (var s in TraqStampPalette.Stamps)
+        <div class="flex flex-row flex-nowrap shrink-0 items-center">
+
+            <div class="flex flex-row w-fit gap-x-3 items-center">
+
+                <h1>@TraqStampPalette.Name</h1>
+
+                @if (StampPalette is not { IsPublic: true })
+                {
+                    <span class="tx-caption text-default-secondary px-1 py-0.5 border-1 border-default-primary rounded-sm">
+                        非公開
+                    </span>
+                }
+
+            </div>
+
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <_PropertyListItem>
+                <Label>
+                    制作者
+                </Label>
+                <Value>
+                    <div class="flex flex-row gap-x-2 items-center">
+                        <span class="size-fit rounded-full overflow-hidden">
+                            <TraqUserIcon TraqApiBaseUri="@TraqClientOptions.Value.ApiBaseAddress"
+                                          Username="@StampPaletteCreator.Name"
+                                          Width="24"
+                                          Height="24" />
+                        </span>
+                        <p>
+                            @StampPaletteCreator.Name
+                        </p>
+                    </div>
+                </Value>
+            </_PropertyListItem>
+
+            <_PropertyListItem>
+                <Label>
+                    説明
+                </Label>
+                <Value>
+                    @if (string.IsNullOrWhiteSpace(TraqStampPalette.Description))
+                    {
+                        <p class="text-default-tertiary">説明なし</p>
+                    }
+                    else
+                    {
+                        <div class="flex flex-col gap-y-2">
+                            @foreach (var para in ToParagraphs(TraqStampPalette.Description))
+                            {
+                                <p>
+                                    @para
+                                </p>
+                            }
+                        </div>
+                    }
+                </Value>
+            </_PropertyListItem>
+
+            <_PropertyListItem>
+                <Label>
+                    スタンプ (@(TraqStampPalette.Stamps.Count)個)
+                </Label>
+                <Value>
+                    <div class="flex flex-row flex-wrap gap-1">
+                        @{
+                            Traq.Api.StampApi stampApi = new(CreateTraqAuthenticatedHttpClient()!);
+                            @foreach (var s in TraqStampPalette.Stamps)
+                            {
+                                <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
+                                              StampId="@s"
+                                              StampApi="@stampApi" />
+                            }
+                        }
+                    </div>
+                </Value>
+            </_PropertyListItem>
+
+            @if (StampPalette is { IsPublic: true })
             {
-                <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
-                StampId="@s"
-                StampApi="@stampApi" />
+                <_PropertyListItem>
+                    <Label>
+                        お気に入り登録者
+                    </Label>
+                    <Value>
+                        @(StampPalette.Subscribers.Length)人
+                    </Value>
+                </_PropertyListItem>
             }
-        }
-    </span>
-
-
-    <h3>スタンプの公開</h3>
-    @if (StampPalette is not { IsPublic: true })
-    {
-        <p>スタンプは非公開です。</p>
-        <button @onclick="() => ChangeVisibility(true)">公開する</button>
-    }
-    else
-    {
-        <p>スタンプが公開されています</p>
-        <button @onclick="() => ChangeVisibility(false)">非公開にする</button>
-    }
-
-    <h3>スタンプの購読者</h3>
-    @if (StampPalette is { IsPublic: true })
-    {
-        <p>@StampPalette.Subscribers.Length 人</p>
-    }
+        </div>
+    </div>
 }
 
 @code {
@@ -112,5 +171,25 @@
         .GetAwaiter().GetResult();
 
         ButtonIsEnabled = true;
+    }
+
+    static IEnumerable<string> ToParagraphs(string text)
+    {
+        int lineStart = 0;
+        int paraStart = 0;
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (text[i] == '\n')
+            {
+                if (text.AsSpan()[lineStart..i].IsWhiteSpace())
+                {
+                    yield return text[paraStart..lineStart];
+                    paraStart = i + 1;
+                }
+                lineStart = i + 1;
+            }
+        }
+        yield return text[paraStart..];
+        yield break;
     }
 }
