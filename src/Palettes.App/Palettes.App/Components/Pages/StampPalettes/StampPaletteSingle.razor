@@ -99,6 +99,15 @@
                     </Value>
                 </_PropertyListItem>
             }
+
+            <_PropertyListItem>
+                <Label>
+                    短縮ID
+                </Label>
+                <Value>
+                    @(SimpleBase.Base58.Bitcoin.Encode(Id.ToByteArray()))
+                </Value>
+            </_PropertyListItem>
         </div>
     </div>
 }
