@@ -124,23 +124,36 @@
     --text-tiny: 0.75rem; /* 12px */
 }
 
-@layer components {
-    .tx-h1 {
-        @apply font-bold font-sans leading-[2.625rem] text-[1.75rem] text-tx-default-primary;
+@utility tx-h1 {
+    @apply font-bold font-sans leading-8 text-2xl text-tx-default-primary;
+}
+@utility tx-h2 {
+    @apply font-semibold font-sans leading-6 text-xl text-tx-default-primary;
+}
+@utility tx-body {
+    @apply font-normal font-sans leading-5 text-base text-tx-default-primary;
+}
+@utility tx-body-strong {
+    @apply font-bold font-sans leading-5 text-base text-tx-default-primary;
+}
+@utility tx-body2 {
+    @apply font-normal font-sans leading-5 text-small text-tx-default-primary;
+}
+@utility tx-body2-strong {
+    @apply font-bold font-sans leading-5 text-small text-tx-default-primary;
+}
+@utility tx-caption {
+    @apply font-medium font-sans leading-4 text-tiny text-tx-default-primary;
+}
+
+@layer base {
+    :root {
+        @apply tx-body;
     }
-    .tx-body {
-        @apply font-normal font-sans leading-5 text-base text-tx-default-primary;
+    h1 {
+        @apply tx-h1;
     }
-    .tx-body-strong {
-        @apply font-bold font-sans leading-5 text-base text-tx-default-primary;
-    }
-    .tx-body2 {
-        @apply font-normal font-sans leading-5 text-small text-tx-default-primary;
-    }
-    .tx-body2-strong {
-        @apply font-bold font-sans leading-5 text-small text-tx-default-primary;
-    }
-    .tx-caption {
-        @apply font-medium font-sans leading-4 text-tiny text-tx-default-primary;
+    h2 {
+        @apply tx-h2;
     }
 }
