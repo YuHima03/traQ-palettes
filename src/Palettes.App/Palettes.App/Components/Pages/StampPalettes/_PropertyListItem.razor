@@ -1,0 +1,20 @@
+﻿<div class="flex
+            md:flex-row md:gap-x-4
+            flex-col gap-y-2">
+    <span class="tx-body2-strong">
+        @Label
+    </span>
+    <span>
+        @Value
+    </span>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required RenderFragment Label { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required RenderFragment Value { get; set; }
+}
