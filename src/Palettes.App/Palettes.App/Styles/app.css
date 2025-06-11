@@ -125,25 +125,32 @@
 }
 
 @utility tx-h1 {
-    @apply font-bold font-sans leading-8 text-2xl text-tx-default-primary;
+    @apply font-bold font-sans leading-8 text-2xl text-default-primary;
 }
 @utility tx-h2 {
-    @apply font-semibold font-sans leading-6 text-xl text-tx-default-primary;
+    @apply font-semibold font-sans leading-6 text-xl text-default-primary;
 }
 @utility tx-body {
-    @apply font-normal font-sans leading-5 text-base text-tx-default-primary;
+    @apply font-normal font-sans leading-5 text-base text-default-primary;
 }
 @utility tx-body-strong {
-    @apply font-bold font-sans leading-5 text-base text-tx-default-primary;
+    @apply font-bold font-sans leading-5 text-base text-default-primary;
 }
 @utility tx-body2 {
-    @apply font-normal font-sans leading-5 text-small text-tx-default-primary;
+    @apply font-normal font-sans leading-5 text-small text-default-primary;
 }
 @utility tx-body2-strong {
-    @apply font-bold font-sans leading-5 text-small text-tx-default-primary;
+    @apply font-bold font-sans leading-5 text-small text-default-primary;
 }
 @utility tx-caption {
-    @apply font-medium font-sans leading-4 text-tiny text-tx-default-primary;
+    @apply font-medium font-sans leading-4 text-tiny text-default-primary;
+}
+
+@utility text-* {
+    color: --value(--color-tx-*);
+}
+@utility border-* {
+    border-color: --value(--color-bd-*);
 }
 
 @layer base {
