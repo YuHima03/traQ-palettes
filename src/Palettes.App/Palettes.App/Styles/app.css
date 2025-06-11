@@ -125,6 +125,9 @@
 }
 
 @layer components {
+    .tx-h1 {
+        @apply font-bold font-sans leading-[2.625rem] text-[1.75rem] text-tx-default-primary;
+    }
     .tx-body {
         @apply font-normal font-sans leading-5 text-base text-tx-default-primary;
     }
