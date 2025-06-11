@@ -69,8 +69,15 @@ namespace Palettes.App.Components.Pages
 
         static async ValueTask<bool> IsLoggedInAsync(Traq.Api.MeApi meApi)
         {
-            var response = await meApi.GetMeWithHttpInfoAsync().ConfigureAwait(false);
-            return response.StatusCode == System.Net.HttpStatusCode.OK;
+            try
+            {
+                var response = await meApi.GetMeWithHttpInfoAsync().ConfigureAwait(false);
+                return response.StatusCode == System.Net.HttpStatusCode.OK;
+            }
+            catch (Traq.Client.ApiException e) when (e.ErrorCode == StatusCodes.Status401Unauthorized)
+            {
+                return false;
+            }
         }
     }
 }
