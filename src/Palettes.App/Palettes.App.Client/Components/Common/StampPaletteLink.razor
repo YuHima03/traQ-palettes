@@ -1,0 +1,79 @@
+﻿<a href="@($"/stamp-palettes/{StampPalette.Id}")">
+
+    <div class="flex flex-col gap-y-3 border-default-secondary border-1 rounded-xl p-3
+                hover:bg-default-secondary hover:cursor-pointer">
+
+        @if (string.IsNullOrWhiteSpace(StampPalette.Name))
+        {
+            <p class="tx-body text-default-tertiary">
+                名称なし
+            </p>
+        }
+        else
+        {
+            <p class="tx-button">
+                @StampPalette.Name
+            </p>
+        }
+
+        <div class="flex flex-row flex-wrap gap-1 md:min-h-[52px]">
+            @foreach (var s in StampPalette.Stamps.Take(20))
+            {
+                <TraqStampImg StampId="@s" />
+            }
+            @if (StampPalette.Stamps.Count > 20)
+            {
+                <span class="tx-body2 font-semibold text-default-secondary">
+                    +@(StampPalette.Stamps.Count - 20)
+                </span>
+            }
+        </div>
+
+        @if (DisplaysCreator)
+        {
+            <div class="flex flex-row flex-nowrap gap-x-2 items-center">
+                <span class="rounded-full overflow-hidden leading-6">
+                    <TraqUserIcon TraqApiBaseUri="@TraqUserApi.Configuration.BasePath"
+                                  Username="@Creator?.Name"
+                                  Width="24"
+                                  Height="24" />
+                </span>
+                <p class="text-default-secondary truncate">
+                    @(Creator?.Name)
+                </p>
+            </div>
+        }
+
+    </div>
+
+</a>
+
+@code {
+    [CascadingParameter]
+    public required Traq.Api.IUserApi TraqUserApi { get; set; }
+
+    [CascadingParameter]
+    public required Traq.Api.IStampApi TraqStampApi { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required Traq.Model.StampPalette StampPalette { get; set; }
+
+    [Parameter]
+    public bool DisplaysCreator { get; set; } = true;
+
+    Traq.Model.UserDetail? Creator
+    {
+        get
+        {
+            try
+            {
+                return TraqUserApi.GetUser(StampPalette.CreatorId);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+}
