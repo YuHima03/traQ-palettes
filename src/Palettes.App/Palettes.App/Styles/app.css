@@ -140,7 +140,7 @@
     @apply font-bold font-sans leading-5 text-base text-default-primary;
 }
 @utility tx-button {
-    @apply font-semibold font-sans leading-5 text-base text-default-primary;
+    @apply font-medium font-sans leading-5 text-base text-default-primary;
 }
 @utility tx-body2 {
     @apply font-normal font-sans leading-5 text-small text-default-primary;
