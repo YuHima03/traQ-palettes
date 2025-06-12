@@ -12,6 +12,7 @@ COPY ["src/Palettes.App/Palettes.App/Palettes.App.csproj", "src/Palettes.App/Pal
 COPY ["src/Palettes.App/Palettes.App.Client/Palettes.App.Client.csproj", "src/Palettes.App/Palettes.App.Client/"]
 COPY ["src/Palettes.Domain/Palettes.Domain.csproj", "src/Palettes.Domain/"]
 COPY ["src/Palettes.Utils/Palettes.Utils.csproj", "src/Palettes.Utils/"]
+COPY ["src/Palettes.Api/Palettes.Api.csproj", "src/Palettes.Api/"]
 RUN dotnet restore "./src/Palettes.App/Palettes.App/Palettes.App.csproj"
 COPY . .
 

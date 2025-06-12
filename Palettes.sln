@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palettes.Utils", "src\Palet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palettes.Infrastructure", "src\Palettes.Infrastructure\Palettes.Infrastructure.csproj", "{2B70BE52-832A-48E8-86D0-29CAEB8BD3E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Palettes.Api", "src\Palettes.Api\Palettes.Api.csproj", "{A7D9E5D9-FC77-4F61-A983-734FF3CA7AC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{2B70BE52-832A-48E8-86D0-29CAEB8BD3E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B70BE52-832A-48E8-86D0-29CAEB8BD3E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B70BE52-832A-48E8-86D0-29CAEB8BD3E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7D9E5D9-FC77-4F61-A983-734FF3CA7AC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7D9E5D9-FC77-4F61-A983-734FF3CA7AC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7D9E5D9-FC77-4F61-A983-734FF3CA7AC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7D9E5D9-FC77-4F61-A983-734FF3CA7AC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

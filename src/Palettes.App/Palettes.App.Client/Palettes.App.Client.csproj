@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Palettes.Api\Palettes.Api.csproj" />
     <ProjectReference Include="..\..\Palettes.Domain\Palettes.Domain.csproj" />
     <ProjectReference Include="..\..\Palettes.Utils\Palettes.Utils.csproj" />
   </ItemGroup>
