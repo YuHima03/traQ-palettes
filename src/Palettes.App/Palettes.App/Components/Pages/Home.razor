@@ -8,52 +8,44 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Palettes</h1>
+<CascadingTraqApi HttpClient="CreateTraqAuthenticatedHttpClient()">
+    <div class="flex flex-col gap-y-6">
 
-<h2>あなたのスタンプパレット</h2>
-@if (UserStampPalettes is not null)
-{
-    foreach (var sp in UserStampPalettes)
-    {
-        <div class="inline-block border-1 border-solid border-gray-7">
-            <h3 class="hover:cursor-pointer hover:underline">
-                <a href="@($"./stamp-palettes/{sp.Id}")">@sp.Name</a>
-            </h3>
-            <span>
-                @foreach (var s in sp.Stamps.Take(20))
-                {
-                    <TraqStampImg StampId="@s"
-                                  StampApi="@TraqStampApi" />
-                }
-            </span>
-        </div>
-    }
-}
+        <div class="flex flex-col gap-y-2">
+            <h2>あなたのスタンプパレット</h2>
 
-<h2>みんなのスタンプパレット</h2>
-@if (PublicStampPalettes is not null)
-{
-    foreach (var (sp, qsp) in PublicStampPalettes)
-    {
-        <div class="inline-block border-1 border-solid border-gray-7">
-            <h3 class="hover:cursor-pointer hover:underline">
-                <a href="@($"./stamp-palettes/{sp.Id}")">@qsp.Name</a>
-            </h3>
-            <span>
-                @foreach (var s in qsp.Stamps.Take(20))
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                @if (UserStampPalettes is not null)
                 {
-                    <TraqStampImg StampId="@s"
-                                  StampApi="@TraqStampApi" />
+                    foreach (var sp in UserStampPalettes)
+                    {
+                        <StampPaletteLink StampPalette="sp" DisplaysCreator="false" />
+                    }
                 }
-            </span>
+            </div>
         </div>
-    }
-}
+
+        <div class="flex flex-col gap-y-2">
+            <h2>みんなのスタンプパレット</h2>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                @if (PublicStampPalettes is not null)
+                {
+                    foreach (var sp in PublicStampPalettes)
+                    {
+                        <StampPaletteLink StampPalette="sp" />
+                    }
+                }
+            </div>
+        </div>
+
+    </div>
+</CascadingTraqApi>
 
 @code {
     List<Traq.Model.StampPalette>? UserStampPalettes = null;
 
-    List<(Domain.Models.StampPalette, Traq.Model.StampPalette)>? PublicStampPalettes = null;
+    List<Traq.Model.StampPalette>? PublicStampPalettes = null;
 
     Traq.Api.StampApi? TraqStampApi = null;
 
@@ -73,7 +65,7 @@
         await using var repo = await RepositoryFactory.CreateRepositoryAsync(default);
         PublicStampPalettes = await (await repo.GetPublicStampPalettesAsync(default))
             .ToAsyncEnumerable()
-            .SelectAwait(async p => (p, await TraqStampApi.GetStampPaletteAsync(p.Id)))
+            .SelectAwait(async p => await TraqStampApi.GetStampPaletteAsync(p.Id))
             .ToListAsync();
     }
 }
