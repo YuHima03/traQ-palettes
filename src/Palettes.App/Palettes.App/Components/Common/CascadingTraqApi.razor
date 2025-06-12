@@ -1,0 +1,15 @@
+﻿<CascadingValue Value="new Traq.Api.StampApi(HttpClient)" TValue="Traq.Api.IStampApi">
+    <CascadingValue Value="new Traq.Api.UserApi(HttpClient)" TValue="Traq.Api.IUserApi">
+        @ChildContent
+    </CascadingValue>
+</CascadingValue>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public required HttpClient HttpClient { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required RenderFragment ChildContent { get; set; }
+}
