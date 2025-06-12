@@ -1,23 +1,46 @@
 ﻿@inject AuthenticationStateProvider AuthStateProvider
 @inject IOptions<Configurations.TraqClientOptions> TraqOptions
+@inject NavigationManager Navigation
 
 <header class="w-full h-[4rem] px-6 flex flex-row gap-x-6 items-center justify-between bg-bg-default-secondary">
-    <span class="inline tx-h2 hover:cursor-pointer hover:text-default-secondary">
-        <a href="/">Q-Palettes</a>
-    </span>
+
+    <div class="flex flex-row gap-x-8 items-center">
+
+        <h1>
+            <a class="inline tx-h2 hover:cursor-pointer hover:text-default-secondary" href="/">
+                Q-Palettes
+            </a>
+        </h1>
+
+        <div class="flex flex-row gap-x-6 invisible md:visible">
+
+            <_HeaderNavLink Href="/" IsCurrent="@(RelativePath == "")">
+                ホーム
+            </_HeaderNavLink>
+
+            <_HeaderNavLink Href="/subscriptions" IsCurrent="@(RelativePath.StartsWith("subscriptions"))">
+                お気に入り
+            </_HeaderNavLink>
+
+        </div>
+
+    </div>
     @if (LoggedInUsername is not null)
     {
         <span class="w-fit h-fit rounded-full overflow-hidden">
             <TraqUserIcon TraqApiBaseUri="@TraqOptions.Value.ApiBaseAddress"
                           Username="@LoggedInUsername"
                           Width="40"
-                          Height="40"/>
+                          Height="40" />
         </span>
     }
+
 </header>
 
 @code {
     string? LoggedInUsername = null;
+
+    string RelativePath = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -26,5 +49,6 @@
         {
             LoggedInUsername = authState.User.FindFirst(ClaimTypes.Name)?.Value;
         }
+        RelativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
     }
 }
