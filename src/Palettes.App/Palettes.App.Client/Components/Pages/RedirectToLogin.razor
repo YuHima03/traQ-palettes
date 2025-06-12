@@ -1,0 +1,15 @@
+﻿@inherits ComponentBase
+@inject NavigationManager Navigation
+
+<div class="p-6 flex flex-col items-center gap-y-4">
+    <p>
+        Q-Palettesを利用するには、traQでの認証が必要です。
+    </p>
+    <a href="@($"/login?redirect={Uri.EscapeDataString($"/{Navigation.ToBaseRelativePath(Navigation.Uri).TrimStart('/')}")}")">
+        <Palettes.App.Client.Components.Common.Button>
+            <span class="tx-button">
+                traQで認証
+            </span>
+        </Palettes.App.Client.Components.Common.Button>
+    </a>
+</div>
