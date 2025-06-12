@@ -4,15 +4,15 @@
 @inject IOptions<Configurations.TraqClientOptions> TraqClientOptions
 @inject IMemoryCache Cache
 @inherits AuthenticatedPageBase
+@rendermode InteractiveServer
 
 @if (TraqStampPalette is not null && StampPaletteCreator is not null)
 {
     <div class="flex flex-col gap-y-6">
 
-        <div class="flex flex-row flex-nowrap shrink-0 items-center">
+        <div class="flex flex-row flex-nowrap gap-x-3 shrink-0 items-center">
 
-            <div class="flex flex-row w-fit gap-x-3 items-center">
-
+            <div class="flex flex-row gap-x-3 grow items-center">
                 <h1>@TraqStampPalette.Name</h1>
 
                 @if (StampPalette is not { IsPublic: true })
@@ -21,8 +21,27 @@
                         非公開
                     </span>
                 }
-
             </div>
+
+            @if (TraqStampPalette.CreatorId == LoggedInUserId)
+            {
+                if (StampPalette is not { IsPublic: true })
+                {
+                    <Button OnClickCallback="_ => ChangeVisibility(true)">
+                        <span class="tx-button">
+                            公開する
+                        </span>
+                    </Button>
+                }
+                else
+                {
+                    <Button Type="Button.ButtonType.Danger" OnClickCallback="_ => ChangeVisibility(false)">
+                        <span class="tx-button text-inherit">
+                            非公開にする
+                        </span>
+                    </Button>
+                }
+            }
 
         </div>
 
@@ -79,8 +98,7 @@
                             Traq.Api.StampApi stampApi = new(CreateTraqAuthenticatedHttpClient()!);
                             @foreach (var s in TraqStampPalette.Stamps)
                             {
-                                <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
-                                              StampId="@s"
+                                <TraqStampImg StampId="@s"
                                               StampApi="@stampApi" />
                             }
                         }
@@ -121,6 +139,8 @@
 
     Domain.Models.StampPalette? StampPalette { get; set; }
 
+    Guid LoggedInUserId = Guid.Empty;
+
     bool ButtonIsEnabled = true;
 
     protected override async Task OnInitializedAsync()
@@ -154,6 +174,11 @@
                 throw new Exception("Permission denied.");
             }
         }
+
+        if (Guid.TryParse(AuthStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult().User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id))
+        {
+            LoggedInUserId = id;
+        }
     }
 
     void ChangeVisibility(bool isPublic)
@@ -163,8 +188,7 @@
             return;
         }
 
-        Task.Run(async () =>
-        {
+        Task.Run(async () => {
             await using var repo = await RepositoryFactory.CreateRepositoryAsync(default).ConfigureAwait(false);
             var palette = await repo.TryGetStampPaletteAsync(Id, default).ConfigureAwait(false);
             if (palette is null)
