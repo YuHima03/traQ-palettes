@@ -106,13 +106,10 @@
                     </Label>
                     <Value>
                         <div class="flex flex-row flex-wrap gap-1">
-                            @{
-                                Traq.Api.StampApi stampApi = new(CreateTraqAuthenticatedHttpClient()!);
                                 @foreach (var s in TraqStampPalette.Stamps)
                                 {
                                     <TraqStampImg StampId="@s" />
                                 }
-                            }
                         </div>
                     </Value>
                 </_PropertyListItem>
