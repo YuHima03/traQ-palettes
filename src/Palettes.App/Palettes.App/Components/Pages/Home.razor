@@ -22,8 +22,7 @@
             <span>
                 @foreach (var s in sp.Stamps.Take(20))
                 {
-                    <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
-                                  StampId="@s"
+                    <TraqStampImg StampId="@s"
                                   StampApi="@TraqStampApi" />
                 }
             </span>
@@ -43,8 +42,7 @@
             <span>
                 @foreach (var s in qsp.Stamps.Take(20))
                 {
-                    <TraqStampImg TraqApiBaseUrl="@TraqClientOptions.Value.ApiBaseAddress"
-                                  StampId="@s"
+                    <TraqStampImg StampId="@s"
                                   StampApi="@TraqStampApi" />
                 }
             </span>
