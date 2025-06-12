@@ -5,15 +5,14 @@
    title="@Stamp?.Name"></i>
 
 @code {
+    [CascadingParameter]
+    public required Traq.Api.IStampApiAsync StampApi { get; set; }
+
     [Parameter]
     public Guid StampId { get; set; }
 
     [Parameter]
     public string? StampName { get; set; }
-
-    [Parameter]
-    [EditorRequired]
-    public required Traq.Api.IStampApiAsync StampApi { get; set; }
 
     [Parameter]
     public int Width { get; set; } = 24;
