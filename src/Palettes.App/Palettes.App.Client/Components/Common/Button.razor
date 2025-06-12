@@ -1,0 +1,46 @@
+﻿@if (Type == ButtonType.Primary)
+{
+    <button class="border-default-secondary border-1 rounded-xl
+                   hover:cursor-pointer hover:bg-default-secondary"
+            @onclick="OnClickCallback">
+        @Content
+    </button>
+}
+else if (Type == ButtonType.Danger)
+{
+    <button class="text-dangerous-primary border-dangerous-primary border-1 rounded-xl
+                   hover:cursor-pointer hover:bg-dangerous-primary"
+            @onclick="OnClickCallback">
+        @Content
+    </button>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? Prefix { get; set; }
+
+    [Parameter]
+    public RenderFragment? Suffix { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public required RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+
+    [Parameter]
+    public ButtonType Type { get; set; } = ButtonType.Primary;
+
+    public enum ButtonType
+    {
+        Primary, Secondary, Danger
+    }
+
+    RenderFragment Content =>
+    @<span class="flex flex-row items-center gap-x-2 px-6 py-2">
+        @Prefix
+        @ChildContent
+        @Suffix
+    </span>;
+}
