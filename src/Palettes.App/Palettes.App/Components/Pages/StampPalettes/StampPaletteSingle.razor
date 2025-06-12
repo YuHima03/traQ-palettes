@@ -39,7 +39,7 @@
                 {
                     if (StampPalette is not { IsPublic: true })
                     {
-                        <Button OnClickCallback="_ => ChangeVisibility(true)">
+                        <Button OnClickCallback="_ => ChangeVisibility(true)" IsDisabled="!PrimaryButtonIsEnabled">
                             <span class="tx-button">
                                 公開する
                             </span>
@@ -47,9 +47,28 @@
                     }
                     else
                     {
-                        <Button Type="Button.ButtonType.Danger" OnClickCallback="_ => ChangeVisibility(false)">
+                        <Button Type="Button.ButtonType.Danger" OnClickCallback="_ => ChangeVisibility(false)" IsDisabled="!PrimaryButtonIsEnabled">
                             <span class="tx-button text-inherit">
                                 非公開にする
+                            </span>
+                        </Button>
+                    }
+                }
+                else
+                {
+                    if (!UserSubscribes)
+                    {
+                        <Button OnClickCallback="_ => ChangeSubscription(true)" IsDisabled="!PrimaryButtonIsEnabled">
+                            <span class="tx-button">
+                                お気に入りに追加
+                            </span>
+                        </Button>
+                    }
+                    else
+                    {
+                        <Button Type="Button.ButtonType.Danger" OnClickCallback="_ => ChangeSubscription(false)" IsDisabled="!PrimaryButtonIsEnabled">
+                            <span class="tx-button text-inherit">
+                                お気に入り解除
                             </span>
                         </Button>
                     }
@@ -106,10 +125,10 @@
                     </Label>
                     <Value>
                         <div class="flex flex-row flex-wrap gap-1">
-                                @foreach (var s in TraqStampPalette.Stamps)
-                                {
-                                    <TraqStampImg StampId="@s" />
-                                }
+                            @foreach (var s in TraqStampPalette.Stamps)
+                            {
+                                <TraqStampImg StampId="@s" />
+                            }
                         </div>
                     </Value>
                 </_PropertyListItem>
@@ -150,7 +169,9 @@
 
     Guid LoggedInUserId = Guid.Empty;
 
-    bool ButtonIsEnabled = true;
+    bool UserSubscribes = false;
+
+    bool PrimaryButtonIsEnabled = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -188,16 +209,19 @@
         {
             LoggedInUserId = id;
         }
+
+        UserSubscribes = StampPalette?.Subscribers.Any(s => s.UserId == LoggedInUserId) ?? false;
     }
 
     void ChangeVisibility(bool isPublic)
     {
-        if (!Interlocked.Exchange(ref ButtonIsEnabled, false))
+        if (!Interlocked.Exchange(ref PrimaryButtonIsEnabled, false))
         {
             return;
         }
 
-        Task.Run(async () => {
+        Task.Run(async () =>
+        {
             await using var repo = await RepositoryFactory.CreateRepositoryAsync(default).ConfigureAwait(false);
             var palette = await repo.TryGetStampPaletteAsync(Id, default).ConfigureAwait(false);
             if (palette is null)
@@ -212,7 +236,34 @@
         })
         .GetAwaiter().GetResult();
 
-        ButtonIsEnabled = true;
+        PrimaryButtonIsEnabled = true;
+    }
+
+    void ChangeSubscription(bool subscribes)
+    {
+        if (!Interlocked.Exchange(ref PrimaryButtonIsEnabled, false))
+        {
+            return;
+        }
+
+        Task.Run(async () =>
+        {
+            await using var repo = await RepositoryFactory.CreateRepositoryAsync(default).ConfigureAwait(false);
+            var subscription = await repo.TryGetStampPaletteSubscriptionAsync(LoggedInUserId, Id, default).ConfigureAwait(false);
+            if (subscription is null && subscribes)
+            {
+                await repo.PostStampPaletteSubscriptionAsync(new Domain.Models.PostStampPaletteSubscriptionRequest(LoggedInUserId, Id, DateTimeOffset.UtcNow), default).ConfigureAwait(false);
+            }
+            else if (subscription is not null && !subscribes)
+            {
+                await repo.DeleteStampPaletteSubscriptionAsync(subscription.Id, default).ConfigureAwait(false);
+            }
+            StampPalette = await repo.GetStampPaletteAsync(Id, default);
+        })
+        .GetAwaiter().GetResult();
+
+        UserSubscribes = subscribes;
+        PrimaryButtonIsEnabled = true;
     }
 
     static IEnumerable<string> ToParagraphs(string text)
