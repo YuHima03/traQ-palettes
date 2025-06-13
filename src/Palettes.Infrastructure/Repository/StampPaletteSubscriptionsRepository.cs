@@ -18,6 +18,7 @@ namespace Palettes.Infrastructure.Repository
         public async ValueTask<StampPaletteSubscription> GetStampPaletteSubscriptionAsync(Guid id, CancellationToken ct)
         {
             return await StampPaletteSubscriptions
+                .AsNoTracking()
                 .Where(s => s.Id == id)
                 .Select(v => v.ToStampPaletteSubscription())
                 .SingleAsync(ct);
@@ -26,6 +27,7 @@ namespace Palettes.Infrastructure.Repository
         public async ValueTask<StampPaletteSubscription[]> GetUserStampPaletteSubscriptionsAsync(Guid userId, CancellationToken ct)
         {
             return await StampPaletteSubscriptions
+                .AsNoTracking()
                 .Where(s => s.UserId == userId)
                 .Select(v => v.ToStampPaletteSubscription())
                 .ToArrayAsync(ct);
@@ -49,6 +51,7 @@ namespace Palettes.Infrastructure.Repository
         public async ValueTask<StampPaletteSubscription?> TryGetStampPaletteSubscriptionAsync(Guid userId, Guid paletteId, CancellationToken ct)
         {
             var subscription = await StampPaletteSubscriptions
+                .AsNoTracking()
                 .Where(s => s.UserId == userId && s.PaletteId == paletteId)
                 .Select(v => v.ToStampPaletteSubscription())
                 .FirstOrDefaultAsync(ct);
