@@ -20,14 +20,13 @@ namespace Palettes.Api
 
     public static class ApiResult
     {
-        public static ApiResult<T> NotFound<T>()
-        {
-            return new() { Result = default!, StatusCode = HttpStatusCode.NotFound };
-        }
+        public static ApiResult<T> InternalServerError<T>() => new() { Result = default!, StatusCode = HttpStatusCode.InternalServerError };
 
-        public static ApiResult<T> Ok<T>(T result)
-        {
-            return new() { Result = result, StatusCode = HttpStatusCode.OK };
-        }
+        public static ApiResult<T> NotFound<T>() => new() { Result = default!, StatusCode = HttpStatusCode.NotFound };
+
+        public static ApiResult<T> Ok<T>(T result) => new() { Result = result, StatusCode = HttpStatusCode.OK };
+
+        public static ApiResult<T> Unauthorized<T>() => new() { Result = default!, StatusCode = HttpStatusCode.Unauthorized };
+
     }
 }
