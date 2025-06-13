@@ -17,4 +17,17 @@ namespace Palettes.Api
 
         public required HttpStatusCode StatusCode { get; init; }
     }
+
+    public static class ApiResult
+    {
+        public static ApiResult<T> NotFound<T>()
+        {
+            return new() { Result = default!, StatusCode = HttpStatusCode.NotFound };
+        }
+
+        public static ApiResult<T> Ok<T>(T result)
+        {
+            return new() { Result = result, StatusCode = HttpStatusCode.OK };
+        }
+    }
 }
