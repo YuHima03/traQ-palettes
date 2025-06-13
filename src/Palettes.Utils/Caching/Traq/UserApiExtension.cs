@@ -34,15 +34,15 @@ namespace Palettes.Utils.Caching.Traq
             return user;
         }
 
-        public static async ValueTask<List<User>> GetCachedUsersAsync(this IUserApiAsync api, IMemoryCache cache, bool includeSuspended, CancellationToken ct)
+        public static async ValueTask<Dictionary<Guid, User>> GetCachedUsersAsync(this IUserApiAsync api, IMemoryCache cache, bool includeSuspended, CancellationToken ct)
         {
-            if (cache.TryGetValue<bool, List<User>>(CacheSections.User, includeSuspended, out var users) && users is not null)
+            if (cache.TryGetValue<bool, Dictionary<Guid, User>>(CacheSections.User, includeSuspended, out var users) && users is not null)
             {
                 return users;
             }
-            users = await api.GetUsersAsync(includeSuspended, null, ct);
+            users = (await api.GetUsersAsync(includeSuspended, null, ct)).ToDictionary(u => u.Id);
             cache.Set(CacheSections.AllUsers, includeSuspended, users, DefaultExpiration);
-            foreach (var u in users)
+            foreach (var (_, u) in users)
             {
                 cache.Set(CacheSections.UserNames, u.Name, u.Id, UserNameExpiration);
                 cache.Set(CacheSections.User, u.Id, u, DefaultExpiration);
