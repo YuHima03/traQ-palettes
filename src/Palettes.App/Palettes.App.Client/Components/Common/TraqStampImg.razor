@@ -1,8 +1,17 @@
 ﻿@inject IMemoryCache Cache
 
-<i class="inline-block overflow-hidden bg-center bg-no-repeat bg-contain align-middle"
-   style="width: @(Width)px; height: @(Height)px; background-image: url(@GetStampImageUri(StampApi.Configuration.BasePath, Stamp?.Id ?? Guid.Empty));"
-   title="@Stamp?.Name"></i>
+@if (StampId != Guid.Empty && StampName is not null)
+{
+    <i class="inline-block overflow-hidden bg-center bg-no-repeat bg-contain align-middle"
+       style="width: @(Width)px; height: @(Height)px; background-image: url(@GetStampImageUri("https://q.trap.jp/api/v3/", StampId));"
+       title="@StampName"></i>
+}
+else
+{
+    <i class="inline-block overflow-hidden bg-center bg-no-repeat bg-contain align-middle"
+       style="width: @(Width)px; height: @(Height)px; background-image: url(@GetStampImageUri(StampApi.Configuration.BasePath, Stamp?.Id ?? Guid.Empty));"
+       title="@Stamp?.Name"></i>
+}
 
 @code {
     [CascadingParameter]
@@ -41,7 +50,7 @@
         {
             throw new InvalidOperationException("StampApi must be provided when StampFileId is not set.");
         }
-        if (StampId == Guid.Empty)
+        else if (StampId == Guid.Empty)
         {
             if (StampName is null)
             {
