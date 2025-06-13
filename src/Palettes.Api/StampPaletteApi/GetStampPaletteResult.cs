@@ -42,9 +42,6 @@ namespace Palettes.Api.StampPaletteApi
             [JsonPropertyName("user")]
             public required User User { get; init; }
 
-            [JsonPropertyName("syncedAt")]
-            public required DateTimeOffset SyncedAt { get; init; }
-
             [JsonPropertyName("createdAt")]
             public required DateTimeOffset CreatedAt { get; init; }
         }
