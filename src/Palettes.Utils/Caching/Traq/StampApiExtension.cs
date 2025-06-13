@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
 using Traq.Api;
 using Traq.Model;
 
@@ -7,7 +8,7 @@ namespace Palettes.Utils.Caching.Traq
     public static class StampApiExtension
     {
         static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(5);
-
+        static readonly TimeSpan StampNameExpiration = TimeSpan.FromDays(1);
         static readonly TimeSpan StampPaletteExpiration = TimeSpan.FromMinutes(1);
 
         public static async ValueTask<Stamp> GetCachedStampAsync(this IStampApiAsync api, IMemoryCache cache, Guid id, CancellationToken ct = default)
@@ -29,6 +30,28 @@ namespace Palettes.Utils.Caching.Traq
             }
             var s = (await api.GetCachedStampsAsync(cache, null, ct)).First(s => s.Name == name); // GetCachedStampsAsync method updates all caches related to stamps.
             return new(s.Id, s.Name, s.CreatorId, s.CreatedAt, s.UpdatedAt, s.FileId, s.IsUnicode);
+        }
+
+        public static async ValueTask<string> GetCachedStampNameAsync(this IStampApiAsync api, IMemoryCache cache, Guid id, CancellationToken ct = default)
+        {
+            var map = cache.GetOrCreate<ConcurrentDictionary<Guid, string>>(
+                CacheSections.StampNameMap, _ => [],
+                new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = StampNameExpiration }
+                );
+            if (map!.TryGetValue(id, out var name))
+            {
+                return name;
+            }
+            var stamps = await api.GetCachedStampsAsync(cache, null, ct);
+            foreach (var s in stamps)
+            {
+                if (s.Id == id)
+                {
+                    name = s.Name;
+                }
+                map.TryAdd(s.Id, s.Name);
+            }
+            return name ?? throw new Exception("Stamp not found.");
         }
 
         public static async ValueTask<List<StampWithThumbnail>> GetCachedStampsAsync(this IStampApiAsync api, IMemoryCache cache, string? type, CancellationToken ct = default)
