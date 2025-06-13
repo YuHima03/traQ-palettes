@@ -1,269 +1,186 @@
-﻿@page "/stamp-palettes/{Id:guid}"
-@inject AuthenticationStateProvider AuthStateProvider
-@inject Services.AuthenticatedTraqHttpClientFactory TraqHttpClientFactory
-@inject IOptions<Configurations.TraqClientOptions> TraqClientOptions
-@inject IMemoryCache Cache
+﻿@page "/stamp-palettes/{PaletteId:guid}"
 @inherits AuthenticatedPageBase
+@inject IOptions<TraqClientOptions> TraqClientOptions
 @rendermode InteractiveServer
 
-<CascadingTraqApi HttpClient="CreateTraqAuthenticatedHttpClient()">
-    @if (TraqStampPalette is not null && StampPaletteCreator is not null)
+<div class="flex flex-col gap-y-6">
+    @if (StampPalette is null)
     {
-        <div class="flex flex-col gap-y-6">
+        <p>
+            読み込み中...
+        </p>
+    }
+    else
+    {
+        <div class="flex flex-row flex-nowrap gap-x-3 shrink-0 items-center">
 
-            <div class="flex flex-row flex-nowrap gap-x-3 shrink-0 items-center">
-
-                <div class="flex flex-row gap-x-3 grow items-center">
-                    @if (string.IsNullOrWhiteSpace(TraqStampPalette.Name))
-                    {
-                        <h1 class="font-normal text-default-tertiary">
-                            名称なし
-                        </h1>
-                    }
-                    else
-                    {
-                        <h1>
-                            @TraqStampPalette.Name
-                        </h1>
-                    }
-
-                    @if (StampPalette is not { IsPublic: true })
-                    {
-                        <span class="tx-caption text-default-secondary px-1 py-0.5 border-1 border-default-primary rounded-sm">
-                            非公開
-                        </span>
-                    }
-                </div>
-
-                @if (TraqStampPalette.CreatorId == LoggedInUserId)
+            <div class="flex flex-row gap-x-3 grow items-center">
+                @if (string.IsNullOrWhiteSpace(StampPalette.Name))
                 {
-                    if (StampPalette is not { IsPublic: true })
-                    {
-                        <Button OnClickCallback="_ => ChangeVisibility(true)" IsDisabled="!PrimaryButtonIsEnabled">
-                            <span class="tx-button">
-                                公開する
-                            </span>
-                        </Button>
-                    }
-                    else
-                    {
-                        <Button Type="Button.ButtonType.Danger" OnClickCallback="_ => ChangeVisibility(false)" IsDisabled="!PrimaryButtonIsEnabled">
-                            <span class="tx-button text-inherit">
-                                非公開にする
-                            </span>
-                        </Button>
-                    }
+                    <h1 class="font-normal text-default-tertiary">
+                        名称なし
+                    </h1>
                 }
                 else
                 {
-                    if (!UserSubscribes)
+                    <h1>
+                        @StampPalette.Name
+                    </h1>
+                }
+
+                @if (StampPalette is not { IsPublic: true })
+                {
+                    <span class="tx-caption text-default-secondary px-1 py-0.5 border-1 border-default-primary rounded-sm">
+                        非公開
+                    </span>
+                }
+            </div>
+
+            @if (StampPalette.Creator.Id == LoggedInUserId)
+            {
+                if (StampPalette is not { IsPublic: true })
+                {
+                    <Button IsDisabled="!PrimaryButtonIsEnabled">
+                        <span class="tx-button">
+                            公開する
+                        </span>
+                    </Button>
+                }
+                else
+                {
+                    <Button Type="Button.ButtonType.Danger" IsDisabled="!PrimaryButtonIsEnabled">
+                        <span class="tx-button text-inherit">
+                            非公開にする
+                        </span>
+                    </Button>
+                }
+            }
+            else
+            {
+                if (!UserSubscribes)
+                {
+                    <Button IsDisabled="!PrimaryButtonIsEnabled">
+                        <span class="tx-button">
+                            お気に入りに追加
+                        </span>
+                    </Button>
+                }
+                else
+                {
+                    <Button Type="Button.ButtonType.Danger" IsDisabled="!PrimaryButtonIsEnabled">
+                        <span class="tx-button text-inherit">
+                            お気に入り解除
+                        </span>
+                    </Button>
+                }
+            }
+
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <_PropertyListItem>
+                <Label>
+                    制作者
+                </Label>
+                <Value>
+                    <div class="flex flex-row gap-x-2 items-center">
+                        <span class="size-fit rounded-full overflow-hidden">
+                            <TraqUserIcon TraqApiBaseUri="@TraqClientOptions.Value.ApiBaseAddress"
+                            Username="@StampPalette.Creator.Name"
+                            Width="24"
+                            Height="24" />
+                        </span>
+                        <p>
+                            @StampPalette.Creator.Name
+                        </p>
+                    </div>
+                </Value>
+            </_PropertyListItem>
+
+            <_PropertyListItem>
+                <Label>
+                    説明
+                </Label>
+                <Value>
+                    @if (string.IsNullOrWhiteSpace(StampPalette.Description))
                     {
-                        <Button OnClickCallback="_ => ChangeSubscription(true)" IsDisabled="!PrimaryButtonIsEnabled">
-                            <span class="tx-button">
-                                お気に入りに追加
-                            </span>
-                        </Button>
+                        <p class="text-default-tertiary">説明なし</p>
                     }
                     else
                     {
-                        <Button Type="Button.ButtonType.Danger" OnClickCallback="_ => ChangeSubscription(false)" IsDisabled="!PrimaryButtonIsEnabled">
-                            <span class="tx-button text-inherit">
-                                お気に入り解除
-                            </span>
-                        </Button>
-                    }
-                }
-
-            </div>
-
-            <div class="flex flex-col gap-4">
-                <_PropertyListItem>
-                    <Label>
-                        制作者
-                    </Label>
-                    <Value>
-                        <div class="flex flex-row gap-x-2 items-center">
-                            <span class="size-fit rounded-full overflow-hidden">
-                                <TraqUserIcon TraqApiBaseUri="@TraqClientOptions.Value.ApiBaseAddress"
-                                              Username="@StampPaletteCreator.Name"
-                                              Width="24"
-                                              Height="24" />
-                            </span>
-                            <p>
-                                @StampPaletteCreator.Name
-                            </p>
-                        </div>
-                    </Value>
-                </_PropertyListItem>
-
-                <_PropertyListItem>
-                    <Label>
-                        説明
-                    </Label>
-                    <Value>
-                        @if (string.IsNullOrWhiteSpace(TraqStampPalette.Description))
-                        {
-                            <p class="text-default-tertiary">説明なし</p>
-                        }
-                        else
-                        {
-                            <div class="flex flex-col gap-y-2">
-                                @foreach (var para in ToParagraphs(TraqStampPalette.Description))
-                                {
-                                    <p>
-                                        @para
-                                    </p>
-                                }
-                            </div>
-                        }
-                    </Value>
-                </_PropertyListItem>
-
-                <_PropertyListItem>
-                    <Label>
-                        スタンプ (@(TraqStampPalette.Stamps.Count)個)
-                    </Label>
-                    <Value>
-                        <div class="flex flex-row flex-wrap gap-1">
-                            @foreach (var s in TraqStampPalette.Stamps)
+                        <div class="flex flex-col gap-y-2">
+                            @foreach (var para in ToParagraphs(StampPalette.Description))
                             {
-                                <TraqStampImg StampId="@s" />
+                                <p>
+                                    @para
+                                </p>
                             }
                         </div>
-                    </Value>
-                </_PropertyListItem>
+                    }
+                </Value>
+            </_PropertyListItem>
 
-                @if (StampPalette is { IsPublic: true })
-                {
-                    <_PropertyListItem>
-                        <Label>
-                            お気に入り登録者
-                        </Label>
-                        <Value>
-                            @(StampPalette.Subscribers.Length)人
-                        </Value>
-                    </_PropertyListItem>
-                }
+            <_PropertyListItem>
+                <Label>
+                    スタンプ (@(StampPalette.Stamps.Length)個)
+                </Label>
+                <Value>
+                    <div class="flex flex-row flex-wrap gap-1">
+                        @foreach (var s in StampPalette.Stamps)
+                        {
+                            <TraqStampImg StampId="@s.Id" StampName="@s.Name" />
+                        }
+                    </div>
+                </Value>
+            </_PropertyListItem>
 
+            @if (StampPalette is { IsPublic: true })
+            {
                 <_PropertyListItem>
                     <Label>
-                        短縮ID
+                        お気に入り登録者
                     </Label>
                     <Value>
-                        @(SimpleBase.Base58.Bitcoin.Encode(Id.ToByteArray()))
+                        @(StampPalette.Subscriptions.Length)人
                     </Value>
                 </_PropertyListItem>
-            </div>
+            }
+
+            <_PropertyListItem>
+                <Label>
+                    短縮ID
+                </Label>
+                <Value>
+                    @(SimpleBase.Base58.Bitcoin.Encode(PaletteId.ToByteArray()))
+                </Value>
+            </_PropertyListItem>
         </div>
     }
-</CascadingTraqApi>
+</div>
 
 @code {
     [Parameter]
-    public Guid Id { get; set; }
+    public Guid PaletteId { get; set; }
 
-    Traq.Model.StampPalette? TraqStampPalette { get; set; }
-    Traq.Model.UserDetail? StampPaletteCreator { get; set; }
+    bool UserSubscribes => StampPalette?.Subscriptions.Any(s => s.User.Id == LoggedInUserId) ?? false;
 
-    Domain.Models.StampPalette? StampPalette { get; set; }
-
-    Guid LoggedInUserId = Guid.Empty;
-
-    bool UserSubscribes = false;
+    Guid LoggedInUserId => User?.Id ?? Guid.Empty;
 
     bool PrimaryButtonIsEnabled = true;
+
+    Api.StampPaletteApi.GetStampPaletteResult? StampPalette;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        var userClient = await CreateTraqAuthenticatedHttpClientAsync();
-        if (userClient is null)
+        var apiClient = await ApiClientFactory.CreateApiClientAsync();
+        var stampPalettes = await apiClient.GetStampPaletteAsync(PaletteId);
+        if (!stampPalettes.IsSuccessStatusCode)
         {
-            throw new Exception("Failed to create authenticated HTTP client.");
+            throw new Exception($"Failed to load stamp palette.");
         }
-
-        Traq.Api.StampApi stampApi = new(userClient);
-        Traq.Api.UserApi userApi = new(userClient);
-        TraqStampPalette = await stampApi.GetStampPaletteAsync(Id);
-        StampPaletteCreator = await userApi.GetCachedUserDetailAsync(Cache, TraqStampPalette.CreatorId, CancellationToken.None);
-
-        await using var repo = await RepositoryFactory.CreateRepositoryAsync(default);
-        StampPalette = await repo.TryGetStampPaletteAsync(Id, default);
-
-        var loginUserIdClaim = (await AuthStateProvider.GetAuthenticationStateAsync()).User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-        if (loginUserIdClaim is null || !Guid.TryParse(loginUserIdClaim.Value, out var loginUserId))
-        {
-            throw new Exception("Failed to retrieve the logged-in user's ID.");
-        }
-
-        if (StampPalette is not { IsPublic: true })
-        {
-            if (TraqStampPalette.CreatorId != loginUserId)
-            {
-                throw new Exception("Permission denied.");
-            }
-        }
-
-        if (Guid.TryParse(AuthStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult().User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id))
-        {
-            LoggedInUserId = id;
-        }
-
-        UserSubscribes = StampPalette?.Subscribers.Any(s => s.UserId == LoggedInUserId) ?? false;
-    }
-
-    void ChangeVisibility(bool isPublic)
-    {
-        if (!Interlocked.Exchange(ref PrimaryButtonIsEnabled, false))
-        {
-            return;
-        }
-
-        Task.Run(async () =>
-        {
-            await using var repo = await RepositoryFactory.CreateRepositoryAsync(default).ConfigureAwait(false);
-            var palette = await repo.TryGetStampPaletteAsync(Id, default).ConfigureAwait(false);
-            if (palette is null)
-            {
-                palette = await repo.PostStampPaletteAsync(new Domain.Models.PostStampPaletteRequest(Id, StampPaletteCreator!.Id, isPublic), default).ConfigureAwait(false);
-            }
-            else
-            {
-                palette = await repo.UpdateStampPaletteAsync(Id, new Domain.Models.UpdateStampPaletteRequest(isPublic), default).ConfigureAwait(false);
-            }
-            StampPalette = palette;
-        })
-        .GetAwaiter().GetResult();
-
-        PrimaryButtonIsEnabled = true;
-    }
-
-    void ChangeSubscription(bool subscribes)
-    {
-        if (!Interlocked.Exchange(ref PrimaryButtonIsEnabled, false))
-        {
-            return;
-        }
-
-        Task.Run(async () =>
-        {
-            await using var repo = await RepositoryFactory.CreateRepositoryAsync(default).ConfigureAwait(false);
-            var subscription = await repo.TryGetStampPaletteSubscriptionAsync(LoggedInUserId, Id, default).ConfigureAwait(false);
-            if (subscription is null && subscribes)
-            {
-                await repo.PostStampPaletteSubscriptionAsync(new Domain.Models.PostStampPaletteSubscriptionRequest(LoggedInUserId, Id, DateTimeOffset.UtcNow), default).ConfigureAwait(false);
-            }
-            else if (subscription is not null && !subscribes)
-            {
-                await repo.DeleteStampPaletteSubscriptionAsync(subscription.Id, default).ConfigureAwait(false);
-            }
-            StampPalette = await repo.GetStampPaletteAsync(Id, default);
-        })
-        .GetAwaiter().GetResult();
-
-        UserSubscribes = subscribes;
-        PrimaryButtonIsEnabled = true;
+        StampPalette = stampPalettes.Result;
     }
 
     static IEnumerable<string> ToParagraphs(string text)
