@@ -19,6 +19,9 @@ namespace Palettes.Api.StampPaletteApi
         [JsonPropertyName("stamps")]
         public required Stamp[] Stamps { get; init; }
 
+        [JsonPropertyName("isPublic")]
+        public required bool IsPublic { get; init; }
+
         [JsonPropertyName("subscribers")]
         public required Subscription[] Subscriptions { get; init; }
 
