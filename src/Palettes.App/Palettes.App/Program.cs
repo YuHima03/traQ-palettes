@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Palettes.App.Configurations;
 using Palettes.Infrastructure.Repository;
@@ -21,6 +22,8 @@ namespace Palettes.App
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents()
                 .AddInteractiveWebAssemblyComponents();
+
+            builder.Services.AddHttpContextAccessor();
 
             builder.Services.Configure<TraqClientOptions>(builder.Configuration);
 
@@ -51,6 +54,8 @@ namespace Palettes.App
 
             // Caching
             builder.Services.AddMemoryCache(builder.Configuration.GetSection("Cache:Memory").Bind);
+
+            builder.Services.TryAddScoped<Api.IApiClientFactory, ApiHandlers.ApiHandlerFactory>();
 
             builder.Services.AddControllers();
             builder.Services.AddAntiforgery();
