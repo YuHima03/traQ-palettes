@@ -36,7 +36,7 @@ namespace Palettes.Utils.Caching.Traq
 
         public static async ValueTask<Dictionary<Guid, User>> GetCachedUsersAsync(this IUserApiAsync api, IMemoryCache cache, bool includeSuspended, CancellationToken ct)
         {
-            if (cache.TryGetValue<bool, Dictionary<Guid, User>>(CacheSections.User, includeSuspended, out var users) && users is not null)
+            if (cache.TryGetValue<bool, Dictionary<Guid, User>>(CacheSections.AllUsers, includeSuspended, out var users) && users is not null)
             {
                 return users;
             }
