@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
 using Traq.Api;
 using Traq.Model;
 
@@ -34,13 +35,13 @@ namespace Palettes.Utils.Caching.Traq
             return user;
         }
 
-        public static async ValueTask<Dictionary<Guid, User>> GetCachedUsersAsync(this IUserApiAsync api, IMemoryCache cache, bool includeSuspended, CancellationToken ct)
+        public static async ValueTask<ConcurrentDictionary<Guid, User>> GetCachedUsersAsync(this IUserApiAsync api, IMemoryCache cache, bool includeSuspended, CancellationToken ct)
         {
-            if (cache.TryGetValue<bool, Dictionary<Guid, User>>(CacheSections.AllUsers, includeSuspended, out var users) && users is not null)
+            if (cache.TryGetValue<bool, ConcurrentDictionary<Guid, User>>(CacheSections.AllUsers, includeSuspended, out var users) && users is not null)
             {
                 return users;
             }
-            users = (await api.GetUsersAsync(includeSuspended, null, ct)).ToDictionary(u => u.Id);
+            users = new((await api.GetUsersAsync(includeSuspended, null, ct)).Select(u => KeyValuePair.Create(u.Id, u)));
             cache.Set(CacheSections.AllUsers, includeSuspended, users, DefaultExpiration);
             foreach (var (_, u) in users)
             {
