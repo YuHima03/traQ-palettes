@@ -7,7 +7,8 @@ namespace Palettes.App.ApiHandlers
         ILogger<ApiHandler> logger,
         Domain.Repository.IRepositoryFactory repositoryFactory,
         Traq.ITraqApiClient traqClient
-        ) : Api.IApiClient
+        )
+        : Api.IApiClient
     {
         readonly IMemoryCache Cache = cache;
         readonly ILogger<ApiHandler> Logger = logger;
