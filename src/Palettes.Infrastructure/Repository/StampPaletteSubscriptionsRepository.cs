@@ -78,7 +78,7 @@ namespace Palettes.Infrastructure.Repository
                 repositoryModel.UserId,
                 repositoryModel.PaletteId,
                 repositoryModel.CopiedPaletteId,
-                repositoryModel.SyncedAt,
+                repositoryModel.SyncedAt.ToUniversalTime(),
                 repositoryModel.CreatedAt,
                 repositoryModel.UpdatedAt
                 );
