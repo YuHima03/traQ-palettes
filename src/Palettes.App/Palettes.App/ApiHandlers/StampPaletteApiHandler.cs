@@ -94,7 +94,7 @@ namespace Palettes.App.ApiHandlers
         {
             if (!request.IsPublic.HasValue)
             {
-                return ApiResult.BadRequest<GetStampPaletteResult>("No proterties are set.");
+                return ApiResult.BadRequest<GetStampPaletteResult>("No properties are set.");
             }
             else if (AuthenticatedUser is null)
             {
