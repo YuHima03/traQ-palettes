@@ -4,7 +4,7 @@ using Palettes.App.Controllers.Helpers;
 
 namespace Palettes.App.Controllers
 {
-    [Route("api/stamp-palettes")]
+    [Route("api/stamp-palettes/{id:guid}")]
     [ApiController]
     public class StampPalettesController(
         Api.IApiClientFactory apiClientFactory,
@@ -12,7 +12,7 @@ namespace Palettes.App.Controllers
         ) : ControllerBase
     {
         [HttpDelete]
-        [Route("{id:guid}/subscription")]
+        [Route("subscription")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -26,7 +26,7 @@ namespace Palettes.App.Controllers
         }
 
         [HttpGet]
-        [Route("{id:guid}")]
+        [Route("")]
         [ProducesResponseType<GetStampPaletteResult>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -41,7 +41,7 @@ namespace Palettes.App.Controllers
         }
 
         [HttpPost]
-        [Route("{id:guid}/subscription")]
+        [Route("ubscription")]
         [ProducesResponseType<PostStampPaletteSubscriptionResult>(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
