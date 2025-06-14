@@ -24,6 +24,11 @@ namespace Palettes.App.ApiHandlers
 
         public async ValueTask<ApiResult<GetStampPaletteResult>> GetStampPaletteAsync(Guid id, CancellationToken ct = default)
         {
+            if (AuthenticatedUser is null)
+            {
+                return ApiResult.Unauthorized<GetStampPaletteResult>();
+            }
+
             var stampPaletteTask = Task.Run(async () => {
                 await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
                 return await repo.TryGetStampPaletteAsync(id, ct);
@@ -43,6 +48,10 @@ namespace Palettes.App.ApiHandlers
                 || !traqUsers.TryGetValue(traqStampPalette.CreatorId, out var creator))
             {
                 return ApiResult.NotFound<GetStampPaletteResult>();
+            }
+            else if (traqStampPalette.CreatorId != AuthenticatedUser.Id)
+            {
+                return ApiResult.Forbidden<GetStampPaletteResult>();
             }
 
             return ApiResult.Ok(new GetStampPaletteResult
@@ -90,7 +99,20 @@ namespace Palettes.App.ApiHandlers
             await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
             if (await repo.TryGetStampPaletteSubscriptionAsync(AuthenticatedUser!.Id, stampPaletteId, ct) is not null)
             {
-                return ApiResult.FromStatusCode<PostStampPaletteSubscriptionResult>(System.Net.HttpStatusCode.Conflict);
+                return ApiResult.ErrorStatusCode<PostStampPaletteSubscriptionResult>(System.Net.HttpStatusCode.Conflict);
+            }
+            var stampPalette = await repo.TryGetStampPaletteAsync(stampPaletteId, ct);
+            if (stampPalette is null)
+            {
+                return ApiResult.NotFound<PostStampPaletteSubscriptionResult>();
+            }
+            else if (stampPalette.UserId == AuthenticatedUser.Id)
+            {
+                return ApiResult.BadRequest<PostStampPaletteSubscriptionResult>("You cannot subscribe to your own stamp palette.");
+            }
+            else if (!stampPalette.IsPublic)
+            {
+                return ApiResult.NotFound<PostStampPaletteSubscriptionResult>();
             }
             var sub = await repo.PostStampPaletteSubscriptionAsync(new Domain.Models.PostStampPaletteSubscriptionRequest
             {
@@ -98,7 +120,7 @@ namespace Palettes.App.ApiHandlers
                 UserId = AuthenticatedUser.Id,
                 SyncedAt = DateTimeOffset.MinValue
             }, ct);
-            return ApiResult.Ok(new PostStampPaletteSubscriptionResult
+            return ApiResult.Created(new PostStampPaletteSubscriptionResult
             {
                 SubscriptionId = sub.Id
             });
