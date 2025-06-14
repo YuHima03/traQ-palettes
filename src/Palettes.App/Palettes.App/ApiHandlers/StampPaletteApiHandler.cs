@@ -90,6 +90,45 @@ namespace Palettes.App.ApiHandlers
             });
         }
 
+        public async ValueTask<ApiResult> PatchStampPaletteAsync(Guid id, PatchStampPaletteRequest request, CancellationToken ct = default)
+        {
+            if (!request.IsPublic.HasValue)
+            {
+                return ApiResult.BadRequest<GetStampPaletteResult>("No proterties are set.");
+            }
+            else if (AuthenticatedUser is null)
+            {
+                return ApiResult.Unauthorized<GetStampPaletteResult>();
+            }
+            await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
+            var stampPalette = await repo.TryGetStampPaletteAsync(id, ct);
+            if (stampPalette is null)
+            {
+                try
+                {
+                    var traqStampPalette = await TraqClient.StampApi.GetCachedStampPaletteAsync(Cache, id, ct);
+                    await repo.PostStampPaletteAsync(new Domain.Models.PostStampPaletteRequest(
+                        traqStampPalette.Id,
+                        traqStampPalette.CreatorId,
+                        request.IsPublic.HasValue && request.IsPublic.Value
+                        ),
+                        ct
+                    );
+                    return ApiResult.NoContent<GetStampPaletteResult>();
+                }
+                catch (Traq.Client.ApiException e) when (e.ErrorCode == StatusCodes.Status404NotFound)
+                {
+                    return ApiResult.NotFound<GetStampPaletteResult>();
+                }
+            }
+            else if (stampPalette.UserId != AuthenticatedUser.Id)
+            {
+                return ApiResult.Forbidden<GetStampPaletteResult>();
+            }
+            await repo.UpdateStampPaletteAsync(id, new Domain.Models.UpdateStampPaletteRequest { IsPublic = request.IsPublic.Value }, ct);
+            return ApiResult.NoContent<GetStampPaletteResult>();
+        }
+
         public async ValueTask<ApiResult<PostStampPaletteSubscriptionResult>> PostStampPalletSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default)
         {
             if (AuthenticatedUser is null)

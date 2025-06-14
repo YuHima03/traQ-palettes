@@ -1,5 +1,7 @@
 ﻿using Palettes.Api;
 using Palettes.Api.StampPaletteApi;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace Palettes.App.Client.ApiClient
 {
@@ -14,6 +16,12 @@ namespace Palettes.App.Client.ApiClient
         public ValueTask<ApiResult<GetStampPaletteResult>> GetStampPaletteAsync(Guid id, CancellationToken ct = default)
         {
             return GetApiResultFromJsonAsync<GetStampPaletteResult>(HttpClient, $"stamp-palettes/{id}", ct);
+        }
+
+        public async ValueTask<ApiResult> PatchStampPaletteAsync(Guid id, PatchStampPaletteRequest request, CancellationToken ct = default)
+        {
+            var res = await HttpClient.PatchAsync($"stamp-palettes/{id}", JsonContent.Create(request, MediaTypeHeaderValue.Parse("application/json")), ct);
+            return await GetApiResultFromJsonAsync<object>(res, ct);
         }
 
         public async ValueTask<ApiResult<PostStampPaletteSubscriptionResult>> PostStampPalletSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default)
