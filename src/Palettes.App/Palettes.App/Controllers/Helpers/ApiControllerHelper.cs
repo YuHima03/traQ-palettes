@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Palettes.Api;
+using System.Text.Json.Serialization;
 
 namespace Palettes.App.Controllers.Helpers
 {
@@ -10,7 +11,7 @@ namespace Palettes.App.Controllers.Helpers
             return controller.User.Identity is { IsAuthenticated: true };
         }
 
-        public static async ValueTask<ActionResult> GetActionResultAsync<TResponse>(this ControllerBase controller, ValueTask<ApiResult<TResponse>> apiResultTask, ILogger logger)
+        public static async ValueTask<ActionResult<TResponse>> GetActionResultAsync<TResponse>(this ControllerBase controller, ValueTask<ApiResult<TResponse>> apiResultTask, ILogger logger)
         {
             try
             {
@@ -18,7 +19,7 @@ namespace Palettes.App.Controllers.Helpers
                 return result.StatusCode switch
                 {
                     System.Net.HttpStatusCode.OK => controller.Ok(result.Result),
-                    _ => controller.StatusCode((int)result.StatusCode)
+                    _ => controller.StatusCode((int)result.StatusCode, new DefaultErrorResult { Message = result.ErrorMessage })
                 };
             }
             catch (Exception e)
@@ -41,5 +42,11 @@ namespace Palettes.App.Controllers.Helpers
                 return controller.StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+    }
+
+    file class DefaultErrorResult
+    {
+        [JsonPropertyName("message")]
+        public string? Message { get; init; }
     }
 }

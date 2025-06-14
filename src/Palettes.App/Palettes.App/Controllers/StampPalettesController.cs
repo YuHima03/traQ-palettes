@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Palettes.Api.StampPaletteApi;
 using Palettes.App.Controllers.Helpers;
 
 namespace Palettes.App.Controllers
@@ -23,7 +24,7 @@ namespace Palettes.App.Controllers
 
         [HttpGet]
         [Route("{id:guid}")]
-        public async Task<IActionResult> GetStampPaletteAsync(Guid id)
+        public async Task<ActionResult<GetStampPaletteResult>> GetStampPaletteAsync(Guid id)
         {
             var ct = HttpContext.RequestAborted;
             await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
@@ -34,7 +35,7 @@ namespace Palettes.App.Controllers
 
         [HttpPost]
         [Route("{id:guid}/subscription")]
-        public async Task<ActionResult> PostStampPaletteSubscriptionAsync(Guid id)
+        public async Task<ActionResult<PostStampPaletteSubscriptionResult>> PostStampPaletteSubscriptionAsync(Guid id)
         {
             var ct = HttpContext.RequestAborted;
             await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
