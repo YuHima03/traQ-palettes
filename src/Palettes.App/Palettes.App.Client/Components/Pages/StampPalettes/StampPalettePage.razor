@@ -58,7 +58,7 @@
             {
                 if (!UserSubscribes)
                 {
-                    <Button IsDisabled="!PrimaryButtonIsEnabled">
+                    <Button OnClickCallback="TrySubscribeAsync" IsDisabled="!PrimaryButtonIsEnabled">
                         <span class="tx-button">
                             お気に入りに追加
                         </span>
@@ -66,7 +66,7 @@
                 }
                 else
                 {
-                    <Button Type="Button.ButtonType.Danger" IsDisabled="!PrimaryButtonIsEnabled">
+                    <Button OnClickCallback="TryUnsubscribeAsync" Type="Button.ButtonType.Danger" IsDisabled="!PrimaryButtonIsEnabled">
                         <span class="tx-button text-inherit">
                             お気に入り解除
                         </span>
@@ -85,9 +85,9 @@
                     <div class="flex flex-row gap-x-2 items-center">
                         <span class="size-fit rounded-full overflow-hidden">
                             <TraqUserIcon TraqApiBaseUri="https://q.trap.jp/api/v3/"
-                            Username="@StampPalette.Creator.Name"
-                            Width="24"
-                            Height="24" />
+                                          Username="@StampPalette.Creator.Name"
+                                          Width="24"
+                                          Height="24" />
                         </span>
                         <p>
                             @StampPalette.Creator.Name
@@ -161,13 +161,13 @@
     [Parameter]
     public Guid PaletteId { get; set; }
 
-    bool UserSubscribes => StampPalette?.Subscriptions.Any(s => s.User.Id == LoggedInUserId) ?? false;
-
     Guid LoggedInUserId => User?.Id ?? Guid.Empty;
 
     bool PrimaryButtonIsEnabled = true;
 
     Api.StampPaletteApi.GetStampPaletteResult? StampPalette;
+
+    bool UserSubscribes = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -180,6 +180,10 @@
             throw new Exception($"Failed to load stamp palette.");
         }
         StampPalette = stampPalettes.Result;
+        if (StampPalette is not null)
+        {
+            UserSubscribes = StampPalette.Subscriptions.Any(s => s.User.Id == LoggedInUserId);
+        }
     }
 
     static IEnumerable<string> ToParagraphs(string text)
@@ -200,5 +204,50 @@
         }
         yield return text[paraStart..];
         yield break;
+    }
+
+    async void TrySubscribeAsync()
+    {
+        if (!Interlocked.Exchange(ref PrimaryButtonIsEnabled, false))
+        {
+            return;
+        }
+        try
+        {
+            var apiClient = await ApiClientFactory.CreateApiClientAsync();
+            await apiClient.PostStampPalletSubscriptionAsync(PaletteId);
+            await TryUpdateStampPaletteAsync();
+        }
+        catch { }
+        PrimaryButtonIsEnabled = true;
+        StateHasChanged();
+    }
+
+    async void TryUnsubscribeAsync()
+    {
+        if (!Interlocked.Exchange(ref PrimaryButtonIsEnabled, false))
+        {
+            return;
+        }
+        try
+        {
+            var apiClient = await ApiClientFactory.CreateApiClientAsync();
+            await apiClient.DeleteStampPaletteSubscriptionAsync(PaletteId);
+            await TryUpdateStampPaletteAsync();
+        }
+        catch { }
+        PrimaryButtonIsEnabled = true;
+        StateHasChanged();
+    }
+
+    async ValueTask TryUpdateStampPaletteAsync()
+    {
+        var apiClient = await ApiClientFactory.CreateApiClientAsync();
+        var result = await apiClient.GetStampPaletteAsync(PaletteId);
+        if (result.IsSuccessStatusCode)
+        {
+            StampPalette = result.Result;
+            UserSubscribes = StampPalette?.Subscriptions.Any(s => s.User.Id == LoggedInUserId) ?? false;
+        }
     }
 }

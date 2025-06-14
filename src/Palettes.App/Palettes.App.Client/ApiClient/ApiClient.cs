@@ -33,5 +33,18 @@ namespace Palettes.App.Client.ApiClient
                 return new ApiResult<T> { Result = default!, StatusCode = response.StatusCode };
             }
         }
+
+        static async ValueTask<ApiResult<T>> GetApiResultFromJsonAsync<T>(HttpResponseMessage response, CancellationToken ct = default)
+        {
+            if (response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<T>(ct);
+                    return ApiResult.Ok(result ?? default!);
+                }
+            }
+            return new ApiResult<T> { Result = default!, StatusCode = response.StatusCode };
+        }
     }
 }
