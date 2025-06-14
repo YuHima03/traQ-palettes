@@ -24,8 +24,7 @@ namespace Palettes.App.ApiHandlers
             var traqUsers = traqUsersTask.Result;
             var traqStamps = traqStampsTask.Result;
 
-            if (stampPalette is null
-                || traqStampPalette is null
+            if (traqStampPalette is null
                 || !traqUsers.TryGetValue(traqStampPalette.CreatorId, out var creator))
             {
                 return ApiResult.NotFound<GetStampPaletteResult>();
@@ -48,7 +47,8 @@ namespace Palettes.App.ApiHandlers
                         Id = stampId,
                         Name = traqStamps.TryGetValue(stampId, out var s) ? s.Name : ""
                     })],
-                Subscriptions = stampPalette.Subscribers.Select(s => {
+                Subscriptions = stampPalette?.Subscribers.Select(s =>
+                {
                     var u = traqUsers.GetValueOrDefault(s.UserId);
                     return new GetStampPaletteResult.Subscription
                     {
@@ -61,7 +61,7 @@ namespace Palettes.App.ApiHandlers
                         CreatedAt = s.CreatedAt
                     };
                 }).ToArray() ?? [],
-                IsPublic = stampPalette.IsPublic,
+                IsPublic = stampPalette?.IsPublic ?? false,
                 CreatedAt = traqStampPalette.CreatedAt,
                 UpdatedAt = traqStampPalette.UpdatedAt
             });
