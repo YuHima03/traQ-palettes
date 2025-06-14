@@ -49,7 +49,7 @@ namespace Palettes.App.ApiHandlers
             {
                 return ApiResult.NotFound<GetStampPaletteResult>();
             }
-            else if (traqStampPalette.CreatorId != AuthenticatedUser.Id)
+            else if (stampPalette is not { IsPublic: true } && traqStampPalette.CreatorId != AuthenticatedUser.Id)
             {
                 return ApiResult.Forbidden<GetStampPaletteResult>();
             }
