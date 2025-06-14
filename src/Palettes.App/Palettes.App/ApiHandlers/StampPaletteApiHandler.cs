@@ -29,7 +29,8 @@ namespace Palettes.App.ApiHandlers
                 return ApiResult.Unauthorized<GetStampPaletteResult>();
             }
 
-            var stampPaletteTask = Task.Run(async () => {
+            var stampPaletteTask = Task.Run(async () =>
+            {
                 await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
                 return await repo.TryGetStampPaletteAsync(id, ct);
             });
@@ -71,7 +72,8 @@ namespace Palettes.App.ApiHandlers
                         Id = stampId,
                         Name = traqStamps.TryGetValue(stampId, out var s) ? s.Name : ""
                     })],
-                Subscriptions = stampPalette?.Subscribers.Select(s => {
+                Subscriptions = stampPalette?.Subscribers.Select(s =>
+                {
                     var u = traqUsers.GetValueOrDefault(s.UserId);
                     return new GetStampPaletteResult.Subscription
                     {
