@@ -13,6 +13,9 @@ namespace Palettes.App.Controllers
     {
         [HttpDelete]
         [Route("{id:guid}/subscription")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<StatusCodeResult> DeleteStampPaletteSubscriptionAsync(Guid id)
         {
             var ct = HttpContext.RequestAborted;
@@ -24,6 +27,10 @@ namespace Palettes.App.Controllers
 
         [HttpGet]
         [Route("{id:guid}")]
+        [ProducesResponseType<GetStampPaletteResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<GetStampPaletteResult>> GetStampPaletteAsync(Guid id)
         {
             var ct = HttpContext.RequestAborted;
@@ -35,6 +42,11 @@ namespace Palettes.App.Controllers
 
         [HttpPost]
         [Route("{id:guid}/subscription")]
+        [ProducesResponseType<PostStampPaletteSubscriptionResult>(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<PostStampPaletteSubscriptionResult>> PostStampPaletteSubscriptionAsync(Guid id)
         {
             var ct = HttpContext.RequestAborted;
