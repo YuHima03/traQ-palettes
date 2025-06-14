@@ -39,7 +39,7 @@
             {
                 if (StampPalette is not { IsPublic: true })
                 {
-                    <Button IsDisabled="!PrimaryButtonIsEnabled">
+                    <Button OnClickCallback="TryPublishAsync" IsDisabled="!PrimaryButtonIsEnabled">
                         <span class="tx-button">
                             公開する
                         </span>
@@ -47,7 +47,7 @@
                 }
                 else
                 {
-                    <Button Type="Button.ButtonType.Danger" IsDisabled="!PrimaryButtonIsEnabled">
+                    <Button OnClickCallback="TryUnpublishAsync" Type="Button.ButtonType.Danger" IsDisabled="!PrimaryButtonIsEnabled">
                         <span class="tx-button text-inherit">
                             非公開にする
                         </span>
@@ -85,9 +85,9 @@
                     <div class="flex flex-row gap-x-2 items-center">
                         <span class="size-fit rounded-full overflow-hidden">
                             <TraqUserIcon TraqApiBaseUri="https://q.trap.jp/api/v3/"
-                                          Username="@StampPalette.Creator.Name"
-                                          Width="24"
-                                          Height="24" />
+                            Username="@StampPalette.Creator.Name"
+                            Width="24"
+                            Height="24" />
                         </span>
                         <p>
                             @StampPalette.Creator.Name
@@ -204,6 +204,40 @@
         }
         yield return text[paraStart..];
         yield break;
+    }
+
+    async void TryPublishAsync()
+    {
+        if (!Interlocked.Exchange(ref PrimaryButtonIsEnabled, false))
+        {
+            return;
+        }
+        try
+        {
+            var apiClient = await ApiClientFactory.CreateApiClientAsync();
+            await apiClient.PatchStampPaletteAsync(PaletteId, new Api.StampPaletteApi.PatchStampPaletteRequest { IsPublic = Domain.Models.Optional.Create(true) });
+            await TryUpdateStampPaletteAsync();
+        }
+        catch { }
+        PrimaryButtonIsEnabled = true;
+        StateHasChanged();
+    }
+
+    async void TryUnpublishAsync()
+    {
+        if (!Interlocked.Exchange(ref PrimaryButtonIsEnabled, false))
+        {
+            return;
+        }
+        try
+        {
+            var apiClient = await ApiClientFactory.CreateApiClientAsync();
+            await apiClient.PatchStampPaletteAsync(PaletteId, new Api.StampPaletteApi.PatchStampPaletteRequest { IsPublic = Domain.Models.Optional.Create(false) });
+            await TryUpdateStampPaletteAsync();
+        }
+        catch { }
+        PrimaryButtonIsEnabled = true;
+        StateHasChanged();
     }
 
     async void TrySubscribeAsync()
