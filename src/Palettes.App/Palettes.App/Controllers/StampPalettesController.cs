@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Palettes.Utils.Authentication.Claims;
+using Palettes.App.Controllers.Helpers;
 
 namespace Palettes.App.Controllers
 {
@@ -10,31 +10,37 @@ namespace Palettes.App.Controllers
         ILogger<StampPalettesController> logger
         ) : ControllerBase
     {
+        [HttpDelete]
+        [Route("{id:guid}/subscription")]
+        public async Task<StatusCodeResult> DeleteStampPaletteSubscriptionAsync(Guid id)
+        {
+            var ct = HttpContext.RequestAborted;
+            await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
+            return this.IsUserAuthenticated()
+                ? await this.GetActionResultAsync(handler.DeleteStampPaletteSubscriptionAsync(id, ct), logger)
+                : Unauthorized();
+        }
+
         [HttpGet]
         [Route("{id:guid}")]
         public async Task<IActionResult> GetStampPaletteAsync(Guid id)
         {
-            try
-            {
-                var user = User.ToTraqUserInfo();
-                if (user is null)
-                {
-                    return Unauthorized();
-                }
-                var handler = await apiClientFactory.CreateApiClientAsync(HttpContext.RequestAborted);
-                var result = await handler.GetStampPaletteAsync(id, HttpContext.RequestAborted);
-                return result.StatusCode switch
-                {
-                    System.Net.HttpStatusCode.OK => Ok(result.Result),
-                    System.Net.HttpStatusCode.NotFound => NotFound(),
-                    _ => StatusCode((int)result.StatusCode),
-                };
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Error while getting stamp palette {Id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            var ct = HttpContext.RequestAborted;
+            await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
+            return this.IsUserAuthenticated()
+                ? await this.GetActionResultAsync(handler.GetStampPaletteAsync(id, ct), logger)
+                : Unauthorized();
+        }
+
+        [HttpPost]
+        [Route("{id:guid}/subscription")]
+        public async Task<ActionResult> PostStampPaletteSubscriptionAsync(Guid id)
+        {
+            var ct = HttpContext.RequestAborted;
+            await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
+            return this.IsUserAuthenticated()
+                ? await this.GetActionResultAsync(handler.PostStampPalletSubscriptionAsync(id, ct), logger)
+                : Unauthorized();
         }
     }
 }

@@ -27,6 +27,7 @@ namespace Palettes.App.ApiHandlers
 
             var userInfo = httpContext.User.ToTraqUserInfo();
             ApiHandler handler = new(
+                new() { Id = userInfo.Id, Name = userInfo.Name },
                 cache,
                 handlerLogger,
                 repositoryFactory,

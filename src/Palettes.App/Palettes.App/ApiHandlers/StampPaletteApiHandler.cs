@@ -6,10 +6,25 @@ namespace Palettes.App.ApiHandlers
 {
     sealed partial class ApiHandler : IStampPaletteApi
     {
+        public async ValueTask<ApiResult> DeleteStampPaletteSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default)
+        {
+            if (AuthenticatedUser is null)
+            {
+                return ApiResult.Unauthorized<object>();
+            }
+            await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
+            var sub = await repo.TryGetStampPaletteSubscriptionAsync(AuthenticatedUser.Id, stampPaletteId, ct);
+            if (sub is null)
+            {
+                return ApiResult.NotFound<object>();
+            }
+            await repo.DeleteStampPaletteSubscriptionAsync(sub.Id, ct);
+            return ApiResult.NoContent<object>();
+        }
+
         public async ValueTask<ApiResult<GetStampPaletteResult>> GetStampPaletteAsync(Guid id, CancellationToken ct = default)
         {
-            var stampPaletteTask = Task.Run(async () => 
-            {
+            var stampPaletteTask = Task.Run(async () => {
                 await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
                 return await repo.TryGetStampPaletteAsync(id, ct);
             });
@@ -47,8 +62,7 @@ namespace Palettes.App.ApiHandlers
                         Id = stampId,
                         Name = traqStamps.TryGetValue(stampId, out var s) ? s.Name : ""
                     })],
-                Subscriptions = stampPalette?.Subscribers.Select(s =>
-                {
+                Subscriptions = stampPalette?.Subscribers.Select(s => {
                     var u = traqUsers.GetValueOrDefault(s.UserId);
                     return new GetStampPaletteResult.Subscription
                     {
@@ -64,6 +78,29 @@ namespace Palettes.App.ApiHandlers
                 IsPublic = stampPalette?.IsPublic ?? false,
                 CreatedAt = traqStampPalette.CreatedAt,
                 UpdatedAt = traqStampPalette.UpdatedAt
+            });
+        }
+
+        public async ValueTask<ApiResult<PostStampPaletteSubscriptionResult>> PostStampPalletSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default)
+        {
+            if (AuthenticatedUser is null)
+            {
+                return ApiResult.Unauthorized<PostStampPaletteSubscriptionResult>();
+            }
+            await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
+            if (await repo.TryGetStampPaletteSubscriptionAsync(AuthenticatedUser!.Id, stampPaletteId, ct) is not null)
+            {
+                return ApiResult.FromStatusCode<PostStampPaletteSubscriptionResult>(System.Net.HttpStatusCode.Conflict);
+            }
+            var sub = await repo.PostStampPaletteSubscriptionAsync(new Domain.Models.PostStampPaletteSubscriptionRequest
+            {
+                StampPaletteId = stampPaletteId,
+                UserId = AuthenticatedUser.Id,
+                SyncedAt = DateTimeOffset.MinValue
+            }, ct);
+            return ApiResult.Ok(new PostStampPaletteSubscriptionResult
+            {
+                SubscriptionId = sub.Id
             });
         }
     }
