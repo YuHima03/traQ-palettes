@@ -38,10 +38,13 @@ namespace Palettes.App.Client.ApiClient
         {
             if (response.IsSuccessStatusCode)
             {
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                switch (response.StatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<T>(ct);
-                    return ApiResult.Ok(result ?? default!);
+                    case System.Net.HttpStatusCode.OK:
+                        return ApiResult.Ok(await response.Content.ReadFromJsonAsync<T>(ct) ?? default!);
+
+                    case System.Net.HttpStatusCode.Created:
+                        return ApiResult.Created(await response.Content.ReadFromJsonAsync<T>(ct) ?? default!);
                 }
             }
             return new ApiResult<T> { Result = default!, StatusCode = response.StatusCode };
