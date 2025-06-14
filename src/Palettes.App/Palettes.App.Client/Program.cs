@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Palettes.Api;
+using Palettes.App.Client.ApiClient;
 
 namespace Palettes.App.Client
 {
@@ -8,11 +10,29 @@ namespace Palettes.App.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            builder.Services.AddAuthorizationCore();
+            builder.Services.AddAuthorizationCore()
+                .AddAuthenticationStateDeserialization();
 
             builder.Services.AddMemoryCache(builder.Configuration.GetSection("Cache:Memory").Bind);
 
+            builder.Services.AddSingleton(CreateDefaultHttpClient(builder));
+
+            builder.Services.AddSingleton<IApiClientFactory, ApiClientFactory>();
+
             await builder.Build().RunAsync();
+        }
+
+        static HttpClient CreateDefaultHttpClient(WebAssemblyHostBuilder builder)
+        {
+            HttpClientHandler clientHandler = new()
+            {
+                AllowAutoRedirect = false,
+            };
+            HttpClient client = new(clientHandler)
+            {
+                BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress.TrimEnd('/')}/api/")
+            };
+            return client;
         }
     }
 }
