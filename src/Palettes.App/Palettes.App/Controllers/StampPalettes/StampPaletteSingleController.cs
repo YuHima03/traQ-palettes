@@ -2,13 +2,13 @@
 using Palettes.Api.StampPaletteApi;
 using Palettes.App.Controllers.Helpers;
 
-namespace Palettes.App.Controllers
+namespace Palettes.App.Controllers.StampPalettes
 {
     [Route("api/stamp-palettes/{id:guid}")]
     [ApiController]
-    public class StampPalettesController(
+    public class StampPaletteSingleController(
         Api.IApiClientFactory apiClientFactory,
-        ILogger<StampPalettesController> logger
+        ILogger<StampPaletteSingleController> logger
         ) : ControllerBase
     {
         [HttpDelete]
