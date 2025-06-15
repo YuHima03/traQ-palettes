@@ -85,9 +85,9 @@
                     <div class="flex flex-row gap-x-2 items-center">
                         <span class="size-fit rounded-full overflow-hidden">
                             <TraqUserIcon TraqApiBaseUri="https://q.trap.jp/api/v3/"
-                                          Username="@StampPalette.Creator.Name"
-                                          Width="24"
-                                          Height="24" />
+                            Username="@StampPalette.Creator.Name"
+                            Width="24"
+                            Height="24" />
                         </span>
                         <p>
                             @StampPalette.Creator.Name
@@ -164,7 +164,7 @@
                         スタンプパレットのコピーがまだ作成されていません。
                     </p>
                     <span class="w-fit">
-                        <Button>
+                        <Button OnClickCallback="TrySyncStampPaletteAsync" IsDisabled="!SyncButtonIsEnabled">
                             <p class="tx-button text-inherit">
                                 コピーを作成
                             </p>
@@ -179,7 +179,7 @@
                         スタンプパレットに更新があります。
                     </p>
                     <span class="w-fit">
-                        <Button>
+                        <Button OnClickCallback="TrySyncStampPaletteAsync" IsDisabled="!SyncButtonIsEnabled">
                             <p class="tx-button text-inherit">
                                 コピーを更新
                             </p>
@@ -206,6 +206,8 @@
     Guid LoggedInUserId => User?.Id ?? Guid.Empty;
 
     bool PrimaryButtonIsEnabled = true;
+
+    bool SyncButtonIsEnabled = true;
 
     Api.StampPaletteApi.GetStampPaletteResult? StampPalette;
 
@@ -303,6 +305,23 @@
         }
         catch { }
         PrimaryButtonIsEnabled = true;
+        StateHasChanged();
+    }
+
+    async void TrySyncStampPaletteAsync()
+    {
+        if (!Interlocked.Exchange(ref SyncButtonIsEnabled, false))
+        {
+            return;
+        }
+        try
+        {
+            var apiClient = await ApiClientFactory.CreateApiClientAsync();
+            await apiClient.SyncCloneStampPaletteAsync(PaletteId);
+            await TryUpdateStampPaletteAsync();
+        }
+        catch { }
+        SyncButtonIsEnabled = true;
         StateHasChanged();
     }
 
