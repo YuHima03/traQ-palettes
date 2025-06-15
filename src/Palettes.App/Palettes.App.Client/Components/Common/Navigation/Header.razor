@@ -1,5 +1,4 @@
 ﻿@inject AuthenticationStateProvider AuthStateProvider
-@inject IOptions<Configurations.TraqClientOptions> TraqOptions
 @inject NavigationManager Navigation
 
 <header class="w-full h-[4rem] px-6 flex flex-row gap-x-6 items-center justify-between bg-bg-default-secondary">
@@ -28,7 +27,7 @@
     @if (LoggedInUsername is not null)
     {
         <span class="w-fit h-fit rounded-full overflow-hidden">
-            <TraqUserIcon TraqApiBaseUri="@TraqOptions.Value.ApiBaseAddress"
+            <TraqUserIcon TraqApiBaseUri="https://q.trap.jp/api/v3/"
                           Username="@LoggedInUsername"
                           Width="40"
                           Height="40" />
@@ -47,7 +46,7 @@
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity is { IsAuthenticated: true })
         {
-            LoggedInUsername = authState.User.FindFirst(ClaimTypes.Name)?.Value;
+            LoggedInUsername = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
         }
         RelativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
     }
