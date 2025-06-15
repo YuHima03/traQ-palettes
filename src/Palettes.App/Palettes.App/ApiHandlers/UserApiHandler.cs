@@ -52,7 +52,7 @@ namespace Palettes.App.ApiHandlers
             var traqStamps = traqStampsTask.Result;
 
             var copiedStampPaletteIds = myStampPaletteSubscriptions
-                .Select(s => s.StampPaletteId)
+                .Select(s => s.CopiedStampPaletteId)
                 .Where(id => id != Guid.Empty)
                 .ToHashSet();
             GetStampPaletteResult.User creatorConst = new()
