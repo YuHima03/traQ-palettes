@@ -13,18 +13,15 @@ namespace Palettes.App.Controllers
     {
         [HttpGet]
         [Route("me")]
-        public async Task<IActionResult> GetMeAsync()
+        [ProducesResponseType<GetMeResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<GetMeResult>> GetMeAsync()
         {
-            try
-            {
-                var handler = await apiClientFactory.CreateApiClientAsync(HttpContext.RequestAborted);
-                var result = await handler.GetMeAsync(HttpContext.RequestAborted);
-                return result.StatusCode switch
-                {
-                    System.Net.HttpStatusCode.OK => Ok(result.Result),
-                    System.Net.HttpStatusCode.Unauthorized => Unauthorized(),
-                    _ => StatusCode((int)result.StatusCode)
-                };
+            var ct = HttpContext.RequestAborted;
+            await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
+            return this.IsUserAuthenticated()
+                ? await this.GetActionResultAsync(handler.GetMeAsync(ct), logger)
+                : Unauthorized();
             }
             catch (Exception ex)
             {
