@@ -20,6 +20,7 @@ namespace Palettes.App
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
+                .AddInteractiveServerComponents()
                 .AddInteractiveWebAssemblyComponents()
                 .AddAuthenticationStateSerialization();
 
@@ -84,6 +85,7 @@ namespace Palettes.App
 
             app.MapStaticAssets();
             app.MapRazorComponents<Components.App>()
+                .AddInteractiveServerRenderMode()
                 .AddInteractiveWebAssemblyRenderMode()
                 .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
 
