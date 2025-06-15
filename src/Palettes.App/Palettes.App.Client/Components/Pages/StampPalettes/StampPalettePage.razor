@@ -1,5 +1,6 @@
 ﻿@page "/stamp-palettes/{PaletteId:guid}"
 @inherits AuthenticatedPageBase
+@inject TimeZoneInfo TimeZone
 @rendermode InteractiveAuto
 
 <div class="flex flex-col gap-y-6">
@@ -11,7 +12,8 @@
     }
     else
     {
-        <div class="flex flex-row flex-nowrap gap-x-3 shrink-0 items-center">
+        <div class="flex flex-col flex-nowrap gap-3 shrink-0 place-items-start
+                    md:flex-row md:items-center">
 
             <div class="flex flex-row gap-x-3 grow items-center">
                 @if (string.IsNullOrWhiteSpace(StampPalette.Name))
@@ -85,9 +87,9 @@
                     <div class="flex flex-row gap-x-2 items-center">
                         <span class="size-fit rounded-full overflow-hidden">
                             <TraqUserIcon TraqApiBaseUri="https://q.trap.jp/api/v3/"
-                            Username="@StampPalette.Creator.Name"
-                            Width="24"
-                            Height="24" />
+                                          Username="@StampPalette.Creator.Name"
+                                          Width="24"
+                                          Height="24" />
                         </span>
                         <p>
                             @StampPalette.Creator.Name
@@ -145,6 +147,7 @@
                 </_PropertyListItem>
             }
 
+            <!--
             <_PropertyListItem>
                 <Label>
                     短縮ID
@@ -153,13 +156,23 @@
                     @(SimpleBase.Base58.Bitcoin.Encode(PaletteId.ToByteArray()))
                 </Value>
             </_PropertyListItem>
+            -->
+
+            <_PropertyListItem>
+                <Label>
+                    更新日時
+                </Label>
+                <Value>
+                    @(TimeZoneInfo.ConvertTimeFromUtc(StampPalette.UpdatedAt.UtcDateTime, TimeZone))
+                </Value>
+            </_PropertyListItem>
         </div>
 
         @if (UserSubscription is not null)
         {
             @if (UserSubscription.SyncedAt == DateTimeOffset.MinValue)
             {
-                <div class="flex flex-col gap-y-3 text-warning-primary bg-warning-primary border-default-secondary border-1 rounded-xl p-4">
+                <div class="flex flex-col gap-y-4 text-warning-primary bg-warning-primary border-default-secondary border-1 rounded-xl p-4">
                     <p>
                         スタンプパレットのコピーがまだ作成されていません。
                     </p>
@@ -174,10 +187,18 @@
             }
             else if (UserSubscription.SyncedAt < StampPalette.UpdatedAt)
             {
-                <div class="flex flex-col gap-y-3 text-note-primary bg-note-primary border-default-secondary border-1 rounded-xl p-4">
+                <div class="flex flex-col gap-y-4 text-note-primary bg-note-primary border-default-secondary border-1 rounded-xl p-4">
                     <p>
                         スタンプパレットに更新があります。
                     </p>
+                    <_PropertyListItem>
+                        <Label>
+                            最終同期時刻
+                        </Label>
+                        <Value>
+                            @(TimeZoneInfo.ConvertTimeFromUtc(UserSubscription.SyncedAt.UtcDateTime, TimeZone).ToString())
+                        </Value>
+                    </_PropertyListItem>
                     <span class="w-fit">
                         <Button OnClickCallback="TrySyncStampPaletteAsync" IsDisabled="!SyncButtonIsEnabled">
                             <p class="tx-button text-inherit">
@@ -189,10 +210,18 @@
             }
             else
             {
-                <div class="flex flex-col gap-y-3 text-success-primary bg-success-primary border-default-secondary border-1 rounded-xl p-4">
+                <div class="flex flex-col gap-y-4 text-success-primary bg-success-primary border-default-secondary border-1 rounded-xl p-4">
                     <p>
                         スタンプパレットのコピーは最新の状態です。
                     </p>
+                    <_PropertyListItem>
+                        <Label>
+                            最終同期時刻
+                        </Label>
+                        <Value>
+                            @(TimeZoneInfo.ConvertTimeFromUtc(UserSubscription.SyncedAt.UtcDateTime, TimeZone))
+                        </Value>
+                    </_PropertyListItem>
                 </div>
             }
         }
