@@ -83,6 +83,10 @@ namespace Palettes.Infrastructure.Repository
                 .Where(s => s.Id == id)
                 .SingleAsync(ct);
             subscription.SyncedAt = request.SyncedAt.UtcDateTime;
+            if (request.CopiedStampPaletteId is not null)
+            {
+                subscription.CopiedPaletteId = request.CopiedStampPaletteId.Value;
+            }
             await SaveChangesAsync(ct);
             return subscription.ToStampPaletteSubscription();
         }

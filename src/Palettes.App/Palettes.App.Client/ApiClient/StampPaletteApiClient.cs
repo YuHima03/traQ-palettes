@@ -39,5 +39,11 @@ namespace Palettes.App.Client.ApiClient
             var res = await HttpClient.PostAsync($"stamp-palettes/{stampPaletteId}/subscription", null, ct);
             return await GetApiResultFromJsonAsync<PostStampPaletteSubscriptionResult>(res, ct);
         }
+
+        public async ValueTask<ApiResult<GetStampPaletteSubscriptionResult>> SyncCloneStampPaletteAsync(Guid stampPaletteId, CancellationToken ct = default)
+        {
+            var res = await HttpClient.PostAsync($"stamp-palettes/{stampPaletteId}/sync", null, ct);
+            return await GetApiResultFromJsonAsync<GetStampPaletteSubscriptionResult>(res, ct);
+        }
     }
 }

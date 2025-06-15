@@ -90,5 +90,21 @@
         /// </list>
         /// </returns>
         public ValueTask<ApiResult<PostStampPaletteSubscriptionResult>> PostStampPalletSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="subscriptionId"></param>
+        /// <param name="ct"></param>
+        /// <returns>
+        /// <list type="bullet">
+        ///     <item><term>200 OK</term> OK.</item>
+        ///     <item><term>400 Bad Request</term> The user is an owner of the stamp palette.</item>
+        ///     <item><term>401 Unauthorized</term> The user is not authenticated.</item>
+        ///     <item><term>403 Forbidden</term> The user has no subscription to the stamp palette.</item>
+        ///     <item><term>404 Not Found</term> The stamp palette is not found or is private.</item>
+        /// </list>
+        /// </returns>
+        public ValueTask<ApiResult<GetStampPaletteSubscriptionResult>> SyncCloneStampPaletteAsync(Guid stampPaletteId, CancellationToken ct = default);
     }
 }

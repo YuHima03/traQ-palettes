@@ -86,5 +86,21 @@ namespace Palettes.App.Controllers.StampPalettes
                 ? await this.GetActionResultAsync(handler.PostStampPalletSubscriptionAsync(id, ct), logger)
                 : Unauthorized();
         }
+
+        [HttpPost]
+        [Route("sync")]
+        [ProducesResponseType<GetStampPaletteSubscriptionResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<GetStampPaletteSubscriptionResult>> SyncStampPaletteAsync(Guid id)
+        {
+            var ct = HttpContext.RequestAborted;
+            await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
+            return this.IsUserAuthenticated()
+                ? await this.GetActionResultAsync(handler.SyncCloneStampPaletteAsync(id, ct), logger)
+                : Unauthorized();
+        }
     }
 }

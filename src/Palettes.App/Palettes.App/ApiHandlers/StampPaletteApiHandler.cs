@@ -271,5 +271,69 @@ namespace Palettes.App.ApiHandlers
                 SubscriptionId = sub.Id
             });
         }
+
+        public async ValueTask<ApiResult<GetStampPaletteSubscriptionResult>> SyncCloneStampPaletteAsync(Guid stampPaletteId, CancellationToken ct = default)
+        {
+            if (AuthenticatedUser is null)
+            {
+                return ApiResult.Unauthorized<GetStampPaletteSubscriptionResult>();
+            }
+
+            await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
+            var subscription = await repo.TryGetStampPaletteSubscriptionAsync(AuthenticatedUser.Id, stampPaletteId, ct);
+            if (subscription is null)
+            {
+                return ApiResult.Forbidden<GetStampPaletteSubscriptionResult>();
+            }
+            var stampPalette = await repo.TryGetStampPaletteAsync(stampPaletteId, ct);
+            if (stampPalette?.UserId == AuthenticatedUser.Id)
+            {
+                return ApiResult.BadRequest<GetStampPaletteSubscriptionResult>("You are an owner of the stamp palette.");
+            }
+            if (stampPalette is not { IsPublic: true })
+            {
+                return ApiResult.NotFound<GetStampPaletteSubscriptionResult>();
+            }
+
+            var srcStampPalette = await TraqClient.StampApi.GetStampPaletteAsync(stampPaletteId, ct);
+            try
+            {
+                var destStampPalette = await TraqClient.StampApi.GetStampPaletteAsync(subscription.CopiedStampPaletteId, ct);
+                await TraqClient.StampApi.EditStampPaletteAsync(
+                    destStampPalette.Id,
+                    new Traq.Model.PatchStampPaletteRequest(destStampPalette.Name, destStampPalette.Description, srcStampPalette.Stamps),
+                    ct
+                );
+                subscription = await repo.UpdateStampPaletteSubscriptionAsync(subscription.Id, new Domain.Models.UpdateStampPaletteSubscriptionRequest { SyncedAt = DateTimeOffset.UtcNow }, ct);
+            }
+            catch (Traq.Client.ApiException e) when (e.ErrorCode == StatusCodes.Status404NotFound)
+            {
+                var _name = $"COPY: {srcStampPalette.Name}";
+                if (_name.Length > 30)
+                {
+                    _name = _name[..30]; // truncate to 30 characters
+                }
+                var newStampPalette = await TraqClient.StampApi.CreateStampPaletteAsync(
+                    new Traq.Model.PostStampPaletteRequest(
+                        srcStampPalette.Stamps,
+                        _name,
+                        srcStampPalette.Description
+                    ),
+                    ct
+                );
+                subscription = await repo.UpdateStampPaletteSubscriptionAsync(subscription.Id, new Domain.Models.UpdateStampPaletteSubscriptionRequest
+                {
+                    CopiedStampPaletteId = newStampPalette.Id,
+                    SyncedAt = DateTimeOffset.UtcNow
+                },ct);
+            }
+            return ApiResult.Ok(new GetStampPaletteSubscriptionResult
+            {
+                Id = subscription.Id,
+                CopiedStampPaletteId = subscription.CopiedStampPaletteId,
+                CreatedAt = subscription.CreatedAt,
+                SyncedAt = subscription.SyncedAt
+            });
+        }
     }
 }
