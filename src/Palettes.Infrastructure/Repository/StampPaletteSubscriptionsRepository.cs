@@ -101,9 +101,9 @@ namespace Palettes.Infrastructure.Repository
                 repositoryModel.UserId,
                 repositoryModel.PaletteId,
                 repositoryModel.CopiedPaletteId,
-                repositoryModel.SyncedAt.ToUniversalTime(),
-                repositoryModel.CreatedAt,
-                repositoryModel.UpdatedAt
+                DateTime.SpecifyKind(repositoryModel.SyncedAt, DateTimeKind.Utc),
+                DateTime.SpecifyKind(repositoryModel.CreatedAt, DateTimeKind.Utc),
+                DateTime.SpecifyKind(repositoryModel.UpdatedAt, DateTimeKind.Utc)
                 );
         }
 
@@ -115,9 +115,9 @@ namespace Palettes.Infrastructure.Repository
                 subscription.UserId,
                 palette.ToStampPalette(),
                 subscription.CopiedPaletteId,
-                subscription.SyncedAt.ToUniversalTime(),
-                subscription.CreatedAt,
-                subscription.UpdatedAt
+                DateTime.SpecifyKind(subscription.SyncedAt, DateTimeKind.Utc),
+                DateTime.SpecifyKind(subscription.CreatedAt, DateTimeKind.Utc),
+                DateTime.SpecifyKind(subscription.UpdatedAt, DateTimeKind.Utc)
                 );
         }
     }
