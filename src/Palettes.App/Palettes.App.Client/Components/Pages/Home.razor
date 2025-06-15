@@ -1,0 +1,71 @@
+﻿@page "/"
+@inherits AuthenticatedPageBase
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Home</PageTitle>
+
+<div class="flex flex-col gap-y-6">
+
+    <div class="flex flex-col gap-y-2">
+        <h2>あなたのスタンプパレット</h2>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            @if (UserStampPalettes is null)
+            {
+                <p>
+                    読み込み中...
+                </p>
+            }
+            else {
+                foreach (var sp in UserStampPalettes)
+                {
+                    <StampPaletteCardLink StampPalette="sp" DisplaysCreator="false" />
+                }
+            }
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-y-2">
+        <h2>みんなのスタンプパレット</h2>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            @if (PublicStampPalettes is null)
+            {
+                <p>
+                    読み込み中...
+                </p>
+            }
+            else {
+                foreach (var sp in PublicStampPalettes)
+                {
+                    <StampPaletteCardLink StampPalette="sp" />
+                }
+            }
+        </div>
+    </div>
+
+</div>
+
+@code {
+    Api.StampPaletteApi.GetStampPaletteListResult.StampPaletteAbstraction[]? PublicStampPalettes;
+    Api.StampPaletteApi.GetStampPaletteListResult.StampPaletteAbstraction[]? UserStampPalettes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await using var api = await ApiClientFactory.CreateApiClientAsync();
+        var publicStampPalettesTask = api.GetPublicStampPalettesAsync().AsTask();
+        var userStampPalettesTask = api.GetMyStampPalettesAsync().AsTask();
+        await Task.WhenAll(publicStampPalettesTask, userStampPalettesTask);
+
+        if (publicStampPalettesTask.Result.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            PublicStampPalettes = publicStampPalettesTask.Result.Result?.StampPalettes;
+        }
+        if (userStampPalettesTask.Result.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            UserStampPalettes = userStampPalettesTask.Result.Result?.StampPalettes;
+        }
+    }
+}
