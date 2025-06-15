@@ -56,7 +56,7 @@
             }
             else
             {
-                if (!UserSubscribes)
+                if (UserSubscription is null)
                 {
                     <Button OnClickCallback="TrySubscribeAsync" IsDisabled="!PrimaryButtonIsEnabled">
                         <span class="tx-button">
@@ -85,9 +85,9 @@
                     <div class="flex flex-row gap-x-2 items-center">
                         <span class="size-fit rounded-full overflow-hidden">
                             <TraqUserIcon TraqApiBaseUri="https://q.trap.jp/api/v3/"
-                            Username="@StampPalette.Creator.Name"
-                            Width="24"
-                            Height="24" />
+                                          Username="@StampPalette.Creator.Name"
+                                          Width="24"
+                                          Height="24" />
                         </span>
                         <p>
                             @StampPalette.Creator.Name
@@ -154,6 +154,48 @@
                 </Value>
             </_PropertyListItem>
         </div>
+
+        @if (UserSubscription is not null)
+        {
+            @if (UserSubscription.SyncedAt == DateTimeOffset.MinValue)
+            {
+                <div class="flex flex-col gap-y-3 text-warning-primary bg-warning-primary border-default-secondary border-1 rounded-xl p-4">
+                    <p>
+                        スタンプパレットのコピーがまだ作成されていません。
+                    </p>
+                    <span class="w-fit">
+                        <Button>
+                            <p class="tx-button text-inherit">
+                                コピーを作成
+                            </p>
+                        </Button>
+                    </span>
+                </div>
+            }
+            else if (UserSubscription.SyncedAt < StampPalette.UpdatedAt)
+            {
+                <div class="flex flex-col gap-y-3 text-note-primary bg-note-primary border-default-secondary border-1 rounded-xl p-4">
+                    <p>
+                        スタンプパレットに更新があります。
+                    </p>
+                    <span class="w-fit">
+                        <Button>
+                            <p class="tx-button text-inherit">
+                                コピーを更新
+                            </p>
+                        </Button>
+                    </span>
+                </div>
+            }
+            else
+            {
+                <div class="flex flex-col gap-y-3 text-success-primary bg-success-primary border-default-secondary border-1 rounded-xl p-4">
+                    <p>
+                        スタンプパレットのコピーは最新の状態です。
+                    </p>
+                </div>
+            }
+        }
     }
 </div>
 
@@ -167,23 +209,13 @@
 
     Api.StampPaletteApi.GetStampPaletteResult? StampPalette;
 
-    bool UserSubscribes = false;
+    Api.StampPaletteApi.GetStampPaletteSubscriptionResult? UserSubscription;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        var apiClient = await ApiClientFactory.CreateApiClientAsync();
-        var stampPalettes = await apiClient.GetStampPaletteAsync(PaletteId);
-        if (!stampPalettes.IsSuccessStatusCode)
-        {
-            throw new Exception($"Failed to load stamp palette.");
-        }
-        StampPalette = stampPalettes.Result;
-        if (StampPalette is not null)
-        {
-            UserSubscribes = StampPalette.Subscriptions.Any(s => s.User.Id == LoggedInUserId);
-        }
+        await TryUpdateStampPaletteAsync();
     }
 
     static IEnumerable<string> ToParagraphs(string text)
@@ -281,7 +313,15 @@
         if (result.IsSuccessStatusCode)
         {
             StampPalette = result.Result;
-            UserSubscribes = StampPalette?.Subscriptions.Any(s => s.User.Id == LoggedInUserId) ?? false;
+            if (StampPalette?.Subscriptions.Any(s => s.User.Id == LoggedInUserId) is true)
+            {
+                var subscriptionResult = await apiClient.GetStampPaletteSubscriptionAsync(PaletteId);
+                UserSubscription = subscriptionResult.IsSuccessStatusCode ? subscriptionResult.Result : null;
+            }
+            else
+            {
+                UserSubscription = null;
+            }
         }
     }
 }
