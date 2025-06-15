@@ -13,6 +13,11 @@ namespace Palettes.App.Client.ApiClient
             return await GetApiResultFromJsonAsync<object>(res, ct);
         }
 
+        public ValueTask<ApiResult<GetStampPaletteListResult>> GetPublicStampPalettesAsync(CancellationToken ct = default)
+        {
+            return GetApiResultFromJsonAsync<GetStampPaletteListResult>(HttpClient, "stamp-palettes", ct);
+        }
+
         public ValueTask<ApiResult<GetStampPaletteResult>> GetStampPaletteAsync(Guid id, CancellationToken ct = default)
         {
             return GetApiResultFromJsonAsync<GetStampPaletteResult>(HttpClient, $"stamp-palettes/{id}", ct);

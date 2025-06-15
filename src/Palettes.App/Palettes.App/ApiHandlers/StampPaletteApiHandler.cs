@@ -22,6 +22,81 @@ namespace Palettes.App.ApiHandlers
             return ApiResult.NoContent<object>();
         }
 
+        public async ValueTask<ApiResult<GetStampPaletteListResult>> GetPublicStampPalettesAsync(CancellationToken ct = default)
+        {
+            if (AuthenticatedUser is null)
+            {
+                return ApiResult.Unauthorized<GetStampPaletteListResult>();
+            }
+            var stampPalettesTask = Task.Run(async () =>
+            {
+                await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
+                return await (await repo.GetPublicStampPalettesAsync(ct)).ToAsyncEnumerable()
+                    .SelectAwait(async p =>
+                    {
+                        try
+                        {
+                            return ValueTuple.Create<Domain.Models.StampPalette, Traq.Model.StampPalette?>(p, await TraqClient.StampApi.GetCachedStampPaletteAsync(Cache, p.Id, ct));
+                        }
+                        catch (Traq.Client.ApiException e) when (e.ErrorCode == StatusCodes.Status404NotFound)
+                        {
+                            return (p, null);
+                        }
+                    })
+                    .ToListAsync(ct);
+            });
+            var traqStampsTask = TraqClient.StampApi.GetCachedStampsAsync(Cache, null, ct).AsTask();
+            var traqUsersTask = TraqClient.UserApi.GetCachedUsersAsync(Cache, true, ct).AsTask();
+
+            await Task.WhenAll(stampPalettesTask, traqUsersTask);
+
+            var stampPalettes = stampPalettesTask.Result;
+            var traqStamps = traqStampsTask.Result;
+            var traqUsers = traqUsersTask.Result;
+
+            return ApiResult.Ok(new GetStampPaletteListResult
+            {
+                StampPalettes = [.. stampPalettes
+                    .Select(p =>
+                    {
+                        var (sp, qsp) = p;
+                        if (qsp is null)
+                        {
+                            return null!;
+                        }
+                        var creator = traqUsers.GetValueOrDefault(sp.UserId);
+                        if (creator is null)
+                        {
+                            return null!;
+                        }
+                        return new GetStampPaletteListResult.StampPaletteAbstraction
+                        {
+                            Id = sp.Id,
+                            Name = qsp.Name,
+                            Creator = new GetStampPaletteResult.User
+                            {
+                                Id = creator.Id,
+                                Name = creator.Name ,
+                                DisplayName = creator.DisplayName
+                            },
+                            IsPublic = sp.IsPublic,
+                            StampSamples = [.. qsp.Stamps
+                                .Take(20)
+                                .Select(stampId => new GetStampPaletteResult.Stamp
+                                {
+                                    Id = stampId,
+                                    Name = traqStamps.TryGetValue(stampId, out var s) ? s.Name : ""
+                                })],
+                            StampCount = qsp.Stamps.Count,
+                            SubscriberCount = sp.Subscribers.Length,
+                            CreatedAt = qsp.CreatedAt,
+                            UpdatedAt = qsp.UpdatedAt
+                        };
+                    })
+                    .Where(p => p is not null)] // exclude if stamp palette or user is not found on traQ.
+            });
+        }
+
         public async ValueTask<ApiResult<GetStampPaletteResult>> GetStampPaletteAsync(Guid id, CancellationToken ct = default)
         {
             if (AuthenticatedUser is null)

@@ -17,6 +17,18 @@
         public ValueTask<ApiResult> DeleteStampPaletteSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default);
 
         /// <summary>
+        /// Gets the public stamp palettes of all users.
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns>
+        /// <list type="bullet">
+        ///     <item><term>200 OK</term> OK.</item>
+        ///     <item><term>401 Unauthorized</term> The user is not authenticated.</item>
+        /// </list>
+        /// </returns>
+        public ValueTask<ApiResult<GetStampPaletteListResult>> GetPublicStampPalettesAsync(CancellationToken ct = default);
+
+        /// <summary>
         /// Gets the stamp palette by its ID.
         /// </summary>
         /// <param name="id"></param>
