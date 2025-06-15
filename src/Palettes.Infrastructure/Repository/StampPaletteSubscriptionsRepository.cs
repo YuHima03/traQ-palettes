@@ -33,6 +33,25 @@ namespace Palettes.Infrastructure.Repository
                 .ToArrayAsync(ct);
         }
 
+        public async ValueTask<StampPaletteSubscriptionWithStampPalette[]> GetUserStampPaletteSubscriptionsWithStampPaletteAsync(Guid userId, CancellationToken ct)
+        {
+            var subscriptions = await StampPaletteSubscriptions
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .ToListAsync(ct);
+            var paletteIds = subscriptions.Select(s => s.PaletteId);
+            var palettes = await StampPalettes
+                .AsNoTracking()
+                .Where(p => paletteIds.Contains(p.Id))
+                .JoinSubscriptions(StampPaletteSubscriptions)
+                .ToDictionaryAsync(p => p.Item1.Id, ct);
+            return [.. subscriptions
+                .Select(s => (s, palettes.GetValueOrDefault(s.PaletteId)))
+                .Where(t => t.Item2 != default)
+                .Select(t => t.ToStampPaletteSubscriptionWithStampPalette())
+            ];
+        }
+
         public async ValueTask<StampPaletteSubscription> PostStampPaletteSubscriptionAsync(PostStampPaletteSubscriptionRequest request, CancellationToken ct)
         {
             RepoStampPaletteSubscription repoModel = new()
@@ -81,6 +100,20 @@ namespace Palettes.Infrastructure.Repository
                 repositoryModel.SyncedAt.ToUniversalTime(),
                 repositoryModel.CreatedAt,
                 repositoryModel.UpdatedAt
+                );
+        }
+
+        public static StampPaletteSubscriptionWithStampPalette ToStampPaletteSubscriptionWithStampPalette(this (RepoStampPaletteSubscription, (RepoStampPalette, IEnumerable<RepoStampPaletteSubscription>)) repositoryModel)
+        {
+            var (subscription, palette) = repositoryModel;
+            return new StampPaletteSubscriptionWithStampPalette(
+                subscription.Id,
+                subscription.UserId,
+                palette.ToStampPalette(),
+                subscription.CopiedPaletteId,
+                subscription.SyncedAt.ToUniversalTime(),
+                subscription.CreatedAt,
+                subscription.UpdatedAt
                 );
         }
     }

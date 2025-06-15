@@ -15,5 +15,10 @@ namespace Palettes.App.Client.ApiClient
         {
             return GetApiResultFromJsonAsync<GetStampPaletteListResult>(HttpClient, "users/me/stamp-palettes", ct);
         }
+
+        public ValueTask<ApiResult<GetMyStampPaletteSubscriptionsResult>> GetMyStampPaletteSubscriptionsAsync(CancellationToken ct = default)
+        {
+            return GetApiResultFromJsonAsync<GetMyStampPaletteSubscriptionsResult>(HttpClient, "users/me/stamp-palette-subscriptions", ct);
+        }
     }
 }

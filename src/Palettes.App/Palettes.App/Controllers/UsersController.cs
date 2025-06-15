@@ -39,5 +39,18 @@ namespace Palettes.App.Controllers
                 ? await this.GetActionResultAsync(handler.GetMyStampPalettesAsync(ct), logger)
                 : Unauthorized();
         }
+
+        [HttpGet]
+        [Route("me/stamp-palette-subscriptions")]
+        [ProducesResponseType<GetMyStampPaletteSubscriptionsResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<GetMyStampPaletteSubscriptionsResult>> GetMyStampPaletteSubscriptionsAsync()
+        {
+            var ct = HttpContext.RequestAborted;
+            await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
+            return this.IsUserAuthenticated()
+                ? await this.GetActionResultAsync(handler.GetMyStampPaletteSubscriptionsAsync(ct), logger)
+                : Unauthorized();
+        }
     }
 }
