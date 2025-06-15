@@ -37,8 +37,7 @@ namespace Palettes.App
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(o => builder.Configuration.Bind("Authentication:Cookie", o));
             builder.Services
-                .AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>()
-                .AddCascadingAuthenticationState();
+                .AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
             // Http Clients
             builder.Services.AddHttpClient();
