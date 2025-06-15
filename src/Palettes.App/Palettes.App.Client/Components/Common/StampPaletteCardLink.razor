@@ -19,7 +19,8 @@
         <div class="flex flex-row flex-wrap gap-1 md:min-h-[52px]">
             @foreach (var s in StampPalette.StampSamples)
             {
-                <TraqStampImg StampId="@s" />
+                <TraqStampImg StampId="@s.Id"
+                              StampName="@s.Name" />
             }
             @if (StampPalette.StampCount > StampPalette.StampSamples.Length)
             {
