@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Palettes.Api;
+using Palettes.Api.StampPaletteApi;
+using Palettes.Api.UserApi;
+using Palettes.App.Controllers.Helpers;
 
 namespace Palettes.App.Controllers
 {
@@ -22,12 +25,19 @@ namespace Palettes.App.Controllers
             return this.IsUserAuthenticated()
                 ? await this.GetActionResultAsync(handler.GetMeAsync(ct), logger)
                 : Unauthorized();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error fetching user details");
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+        }
+
+        [HttpGet]
+        [Route("me/stamp-palettes")]
+        [ProducesResponseType<GetStampPaletteListResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<GetStampPaletteListResult>> GetMyStampPalettesAsync()
+        {
+            var ct = HttpContext.RequestAborted;
+            await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
+            return this.IsUserAuthenticated()
+                ? await this.GetActionResultAsync(handler.GetMyStampPalettesAsync(ct), logger)
+                : Unauthorized();
         }
     }
 }
