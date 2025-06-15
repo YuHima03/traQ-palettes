@@ -167,6 +167,36 @@ namespace Palettes.App.ApiHandlers
             });
         }
 
+        public async ValueTask<ApiResult<GetStampPaletteSubscriptionResult>> GetStampPaletteSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default)
+        {
+            if (AuthenticatedUser is null)
+            {
+                return ApiResult.Unauthorized<GetStampPaletteSubscriptionResult>();
+            }
+            await using var repo = await RepositoryFactory.CreateRepositoryAsync(ct);
+            var stampPalette = await repo.TryGetStampPaletteAsync(stampPaletteId, ct);
+            if (stampPalette?.UserId == AuthenticatedUser.Id)
+            {
+                return ApiResult.BadRequest<GetStampPaletteSubscriptionResult>("You are an owner of the stamp palette.");
+            }
+            else if (stampPalette is not { IsPublic: true })
+            {
+                return ApiResult.NotFound<GetStampPaletteSubscriptionResult>();
+            }
+            var subscription = await repo.TryGetStampPaletteSubscriptionAsync(AuthenticatedUser.Id, stampPaletteId, ct);
+            if (subscription is null)
+            {
+                return ApiResult.NotFound<GetStampPaletteSubscriptionResult>();
+            }
+            return ApiResult.Ok(new GetStampPaletteSubscriptionResult
+            {
+                Id = subscription.Id,
+                CopiedStampPaletteId = subscription.CopiedStampPaletteId,
+                CreatedAt = subscription.CreatedAt,
+                SyncedAt = subscription.SyncedAt
+            });
+        }
+
         public async ValueTask<ApiResult> PatchStampPaletteAsync(Guid id, PatchStampPaletteRequest request, CancellationToken ct = default)
         {
             if (!request.IsPublic.HasValue)

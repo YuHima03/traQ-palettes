@@ -40,6 +40,21 @@ namespace Palettes.App.Controllers.StampPalettes
                 : Unauthorized();
         }
 
+        [HttpGet]
+        [Route("subscription")]
+        [ProducesResponseType<GetStampPaletteSubscriptionResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<GetStampPaletteSubscriptionResult>> GetStampPaletteSubscriptionAsync(Guid id)
+        {
+            var ct = HttpContext.RequestAborted;
+            await using var handler = await apiClientFactory.CreateApiClientAsync(ct);
+            return this.IsUserAuthenticated()
+                ? await this.GetActionResultAsync(handler.GetStampPaletteSubscriptionAsync(id, ct), logger)
+                : Unauthorized();
+        }
+
         [HttpPatch]
         [Route("")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

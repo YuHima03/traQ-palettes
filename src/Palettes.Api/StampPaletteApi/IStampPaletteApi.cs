@@ -29,6 +29,21 @@
         public ValueTask<ApiResult<GetStampPaletteListResult>> GetPublicStampPalettesAsync(CancellationToken ct = default);
 
         /// <summary>
+        /// Gets the subscription to a stamp palette of the user by its ID.
+        /// </summary>
+        /// <param name="stampPaletteId"></param>
+        /// <param name="ct"></param>
+        /// <returns>
+        /// <list type="bullet">
+        ///     <item><term>200 OK</term> OK.</item>
+        ///     <item><term>400 Bad Request</term> The user is an owner of the stamp palette.</item>
+        ///     <item><term>401 Unauthorized</term> The user is not authenticated.</item>
+        ///     <item><term>404 Not Found</term> The stamp palette is not found or is private.</item>
+        /// </list>
+        /// </returns>
+        public ValueTask<ApiResult<GetStampPaletteSubscriptionResult>> GetStampPaletteSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default);
+
+        /// <summary>
         /// Gets the stamp palette by its ID.
         /// </summary>
         /// <param name="id"></param>

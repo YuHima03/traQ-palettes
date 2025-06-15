@@ -23,6 +23,11 @@ namespace Palettes.App.Client.ApiClient
             return GetApiResultFromJsonAsync<GetStampPaletteResult>(HttpClient, $"stamp-palettes/{id}", ct);
         }
 
+        public ValueTask<ApiResult<GetStampPaletteSubscriptionResult>> GetStampPaletteSubscriptionAsync(Guid stampPaletteId, CancellationToken ct = default)
+        {
+            return GetApiResultFromJsonAsync<GetStampPaletteSubscriptionResult>(HttpClient, $"stamp-palettes/{stampPaletteId}/subscription", ct);
+        }
+
         public async ValueTask<ApiResult> PatchStampPaletteAsync(Guid id, PatchStampPaletteRequest request, CancellationToken ct = default)
         {
             var res = await HttpClient.PatchAsync($"stamp-palettes/{id}", JsonContent.Create(request, MediaTypeHeaderValue.Parse("application/json")), ct);
