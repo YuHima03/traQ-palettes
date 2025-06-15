@@ -1,0 +1,45 @@
+﻿@page "/subscriptions"
+@inherits Palettes.App.Client.Components.Pages.AuthenticatedPageBase
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Subscriptions | Q-Palettes</PageTitle>
+
+<div class="flex flex-col gap-y-6">
+
+    <h2>
+        お気に入り
+    </h2>
+
+    @if (Subscriptions is null)
+    {
+        <p>
+            読み込み中...
+        </p>
+    }
+    else
+    {
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            @foreach (var sub in Subscriptions)
+            {
+                <StampPaletteCardLink StampPalette="sub.StampPalette" />
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    Api.UserApi.GetMyStampPaletteSubscriptionsResult.Subscription[]? Subscriptions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await using var api = await ApiClientFactory.CreateApiClientAsync();
+        var result = await api.GetMyStampPaletteSubscriptionsAsync();
+        if (result.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            Subscriptions = result.Result?.Subscriptions;
+        }
+    }
+}
