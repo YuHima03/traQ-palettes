@@ -61,6 +61,8 @@ namespace Palettes.App
             builder.Services.AddControllers();
             builder.Services.AddAntiforgery();
 
+            builder.Services.AddSingleton(TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time"));
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

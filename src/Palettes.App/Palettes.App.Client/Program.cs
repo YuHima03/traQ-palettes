@@ -19,6 +19,8 @@ namespace Palettes.App.Client
 
             builder.Services.AddSingleton<IApiClientFactory, ApiClientFactory>();
 
+            builder.Services.AddSingleton(TimeZoneInfo.CreateCustomTimeZone("JST", TimeSpan.FromHours(9), null, null));
+
             await builder.Build().RunAsync();
         }
 
