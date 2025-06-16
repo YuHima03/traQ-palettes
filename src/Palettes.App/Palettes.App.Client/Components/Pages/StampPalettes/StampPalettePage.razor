@@ -1,7 +1,6 @@
 ﻿@page "/stamp-palettes/{PaletteId:guid}"
 @inherits AuthenticatedPageBase
 @inject TimeZoneInfo TimeZone
-@rendermode InteractiveAuto
 
 <PageTitle>@((StampPalette is not null) ? $"{StampPalette.Name} by {StampPalette.Creator.Name}" : "スタンプパレット") | Q-Palettes</PageTitle>
 
