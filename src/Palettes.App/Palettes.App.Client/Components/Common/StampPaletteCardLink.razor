@@ -3,18 +3,30 @@
     <div class="flex flex-col gap-y-3 border-default-secondary border-1 rounded-xl p-3
                 hover:bg-default-secondary hover:cursor-pointer">
 
-        @if (string.IsNullOrWhiteSpace(StampPalette.Name))
-        {
-            <p class="tx-body text-default-tertiary">
-                名称なし
-            </p>
-        }
-        else
-        {
-            <p class="tx-button">
-                @StampPalette.Name
-            </p>
-        }
+        <div class="flex flex-row">
+            <div class="flex flex-row gap-x-3 items-center">
+                @if (string.IsNullOrWhiteSpace(StampPalette.Name))
+                {
+                    <p class="tx-body text-default-tertiary">
+                        名称なし
+                    </p>
+                }
+                else
+                {
+                    <p class="tx-button truncate">
+                        @StampPalette.Name
+                    </p>
+                }
+
+                @if (!StampPalette.IsPublic)
+                {
+                    <span class="material-symbols-rounded text-base! text-default-tertiary">
+                        lock
+                    </span>
+                }
+            </div>
+
+        </div>
 
         <div class="flex flex-row flex-wrap gap-1 md:min-h-[52px]">
             @foreach (var s in StampPalette.StampSamples)
