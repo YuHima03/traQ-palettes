@@ -1,0 +1,41 @@
+﻿@page "/my-stamp-palettes"
+@inherits AuthenticatedPageBase
+
+<PageTitle>自分のスタンプパレット | Q-Palettes</PageTitle>
+
+<div class="flex flex-col gap-y-2">
+    <h2>あなたのスタンプパレット</h2>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+        @if (UserStampPalettes is null)
+        {
+            <p>
+                読み込み中...
+            </p>
+        }
+        else
+        {
+            foreach (var sp in UserStampPalettes)
+            {
+                <StampPaletteCardLink StampPalette="sp" DisplaysCreator="false" />
+            }
+        }
+    </div>
+</div>
+
+@code {
+    Api.StampPaletteApi.GetStampPaletteListResult.StampPaletteAbstraction[]? UserStampPalettes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await using var api = await ApiClientFactory.CreateApiClientAsync();
+        var userStampPalettes = await api.GetMyStampPalettesAsync();
+
+        if (userStampPalettes.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            UserStampPalettes = userStampPalettes.Result?.StampPalettes;
+        }
+    }
+}
